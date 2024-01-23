@@ -85,9 +85,9 @@ const sizes = {
 
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height)
-camera.position.z = 3
+camera.position.set(-2,2,5)
 scene.add(camera)
-
+console.log(camera,canvas);
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 // Renderer
