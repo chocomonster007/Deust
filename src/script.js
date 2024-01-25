@@ -60,11 +60,11 @@ const mobilierBakedMaterial = new THREE.MeshBasicMaterial({
     map:mobilierBakedTexture
 })
 
+const milieuProj = {}
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
     const sol = gltf.scene.children.find(child=>child.name === 'sol')
-    console.log(gltf.scene.children);
     const plafond = gltf.scene.children.find(child =>child.name === 'plafond')
     const all = gltf.scene.children.filter(child=>['hautRetro','hautTable', 'tableBord','tableProf', 'controleRetro', 'loquetPorte','murFenetre', 'murFond', 'murPorte','murVideo', 'radiateur'].includes(child.name))
     const mobilier = gltf.scene.children.filter(child=>['chaises','enceintes', 'myScreen','porteManteau','pancarteDeust','rétro','rétroprojecteur'].includes(child.name))
@@ -74,7 +74,21 @@ gltfLoader.load('deustSalle.glb',gltf=>{
         child.material = allBakedMaterial
     })
     mobilier.forEach(child=>child.material = mobilierBakedMaterial)
-    //all.material = allBakedMaterial
+    const drap = gltf.scene.children.find(child =>child.name === 'toileRetro')
+    milieuProj.y = ((drap.geometry.boundingBox.max.y - drap.geometry.boundingBox.min.y)/2);
+    milieuProj.x = 0
+    milieuProj.z = drap.geometry.boundingBox.max.z
+
+    const spotLight = new THREE.SpotLight( 0xffffff,100 );
+    spotLight.position.set(0.05,2.65,-1.45)
+    spotLight.angle = Math.PI/8
+    spotLight.castShadow = false
+    spotLight.target.position.set(milieuProj.x,milieuProj.y,milieuProj.z)
+    spotLight.target.updateMatrixWorld();
+
+    const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+
+    scene.add(spotLight,spotLightHelper)
 })
 
 // Sizes
@@ -116,7 +130,6 @@ window.addEventListener('resize', () =>
 
 
 const clock = new THREE.Clock()
-
 
 //Animation 
 function tick(){
