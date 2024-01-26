@@ -6,7 +6,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import vertexRetro from './shader/retroVertex.glsl';
 import fragmentRetro from './shader/retroFragment.glsl';
-
+import vertexRetrobis from './shader/retroVertexbis.glsl';
+import fragmentRetrobis from './shader/retroFragmentbis.glsl';
 
 const gui = new GUI();
 
@@ -86,13 +87,28 @@ const milieuProj = {}
 const coneGeometry = new THREE.ConeGeometry(0.6,2)
 const coneMaterial = new THREE.ShaderMaterial({
     vertexShader : vertexRetro,
-    fragmentShader : fragmentRetro
+    fragmentShader : fragmentRetro,
+    transparent:true,
+    //blending:THREE.AdditiveBlending
 })
-const cone = new THREE.Mesh(coneGeometry, coneMaterial ); 
+const cone = new THREE.Mesh(coneGeometry, coneMaterial); 
 cone.position.set(0.05,2.35,-2.35)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
-console.log(cone.geometry.boundingBox);
+console.log(cone.geometry.boundingBox, cone.position);
+
+const cone2Geometry = new THREE.ConeGeometry(0.5,2)
+const cone2Material = new THREE.ShaderMaterial({
+    vertexShader : vertexRetrobis,
+    fragmentShader : fragmentRetrobis,
+    transparent:true,
+    //blending:THREE.AdditiveBlending
+
+})
+const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
+cone2.position.set(0.05,2.35,-2.35)
+cone2.rotation.x=Math.PI/2.5
+
 
 
 const pancarteBaked = textureLoader.load('PANCARTE.jpg')
@@ -107,7 +123,7 @@ const clavierMat =new THREE.MeshBasicMaterial({
 
 })
 
-scene.add( cone );
+scene.add( cone2,cone );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
