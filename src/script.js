@@ -4,6 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import vertexRetro from './shader/retroVertex.glsl';
+import fragmentRetro from './shader/retroFragment.glsl';
+
 
 const gui = new GUI();
 
@@ -27,6 +30,10 @@ dracoLoader.setDecoderPath('draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
+const ordiBaked = textureLoader.load('ordifinal.jpg')
+ordiBaked.flipY = false
+ordiBaked.colorSpace = THREE.SRGBColorSpace
+
 const solBakedTexture = textureLoader.load('solEnd2.jpg')
 solBakedTexture.flipY = false
 solBakedTexture.colorSpace = THREE.SRGBColorSpace
@@ -35,8 +42,6 @@ const plafondBakedTexture = textureLoader.load('plafond.jpg')
 plafondBakedTexture.flipY = false
 plafondBakedTexture.colorSpace = THREE.SRGBColorSpace
 
-console.log(plafondBakedTexture);
-
 const allBakedTexture = textureLoader.load('FINALBOUM.jpg')
 allBakedTexture.flipY = false
 allBakedTexture.colorSpace = THREE.SRGBColorSpace
@@ -44,10 +49,6 @@ allBakedTexture.colorSpace = THREE.SRGBColorSpace
 const pacarteMurBaked = textureLoader.load('MURPANCARTE.JPG')
 pacarteMurBaked.flipY = false
 pacarteMurBaked.colorSpace = THREE.SRGBColorSpace
-
-const ordiBaked = textureLoader.load('ordifinal2.jpg')
-ordiBaked.flipY = false
-ordiBaked.colorSpace = THREE.SRGBColorSpace
 
 const mobilierBakedTexture = textureLoader.load('ordis.jpg')
 mobilierBakedTexture.flipY = false
@@ -83,13 +84,15 @@ const pancarteMurMAt = new THREE.MeshBasicMaterial({
 const milieuProj = {}
 
 const coneGeometry = new THREE.ConeGeometry(0.6,2)
-const coneMaterial = new THREE.MeshBasicMaterial({color: 0x20A8FC,
-                                                    transparent:true,
-                                                    opacity:0.2,
-                                                    blending: THREE.AdditiveBlending,})
+const coneMaterial = new THREE.ShaderMaterial({
+    vertexShader : vertexRetro,
+    fragmentShader : fragmentRetro
+})
 const cone = new THREE.Mesh(coneGeometry, coneMaterial ); 
 cone.position.set(0.05,2.35,-2.35)
 cone.rotation.x=Math.PI/2.5
+cone.geometry.computeBoundingBox()
+console.log(cone.geometry.boundingBox);
 
 
 const pancarteBaked = textureLoader.load('PANCARTE.jpg')
@@ -115,9 +118,8 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const pancarte = gltf.scene.children.find(child=>child.name=="liègePancarte")
     const pancarteMur = gltf.scene.children.find(child=>child.name=='liègeMur')
     const ordis = gltf.scene.children.find(child=>child.name=='ordis')
-    const claviers = gltf.scene.children.find(child=>child.name=='claviers')
+    // const claviers = gltf.scene.children.find(child=>child.name=='claviers')
 
-    console.log(ordis, ordiBakedMaterial);
     ordis.material = ordiBakedMaterial
     // claviers.material = ordiPiedBakedMaterial
     pancarte.material = pancarteMat
@@ -161,8 +163,9 @@ const sizes = {
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height)
 camera.position.set(-2,2,5)
+camera.rotation.set(-0.23,-0.17,-0.04)
+
 scene.add(camera)
-console.log(camera,canvas);
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 // Renderer
