@@ -9,6 +9,8 @@ import fragmentRetro from './shader/retroFragment.glsl';
 import vertexRetrobis from './shader/retroVertexbis.glsl';
 import fragmentRetrobis from './shader/retroFragmentbis.glsl';
 
+
+const cubeTextureLoader = new THREE.CubeTextureLoader()
 const gui = new GUI();
 
 // Canvas
@@ -17,6 +19,8 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+let intersects
+
 /**
  * Loaders
  */
@@ -24,16 +28,13 @@ const scene = new THREE.Scene()
 const textureLoader = new THREE.TextureLoader()
 
 // Draco loader
-const dracoLoader = new DRACOLoader()
-dracoLoader.setDecoderPath('draco/')
+// const dracoLoader = new DRACOLoader()
+// dracoLoader.setDecoderPath('draco/')
 
 // GLTF loader
 const gltfLoader = new GLTFLoader()
-gltfLoader.setDRACOLoader(dracoLoader)
+// gltfLoader.setDRACOLoader(dracoLoader)
 
-const ordiBaked = textureLoader.load('ordifinal.jpg')
-ordiBaked.flipY = false
-ordiBaked.colorSpace = THREE.SRGBColorSpace
 
 const solBakedTexture = textureLoader.load('solEnd2.jpg')
 solBakedTexture.flipY = false
@@ -43,7 +44,7 @@ const plafondBakedTexture = textureLoader.load('plafond.jpg')
 plafondBakedTexture.flipY = false
 plafondBakedTexture.colorSpace = THREE.SRGBColorSpace
 
-const allBakedTexture = textureLoader.load('FINALBOUM.jpg')
+const allBakedTexture = textureLoader.load('mur2.jpg')
 allBakedTexture.flipY = false
 allBakedTexture.colorSpace = THREE.SRGBColorSpace
 
@@ -57,10 +58,6 @@ mobilierBakedTexture.colorSpace = THREE.SRGBColorSpace
 
 const solBakedMaterial = new THREE.MeshBasicMaterial({
     map:solBakedTexture
-})
-
-const ordiBakedMaterial = new THREE.MeshBasicMaterial({
-    map:ordiBaked
 })
 
 const plafondBakedMaterial = new THREE.MeshBasicMaterial({
@@ -79,6 +76,11 @@ const pancarteMurMAt = new THREE.MeshBasicMaterial({
     map:pacarteMurBaked
 })
 
+const vitre = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent:true,
+    opacity:0.1
+})
 // const spotLightMap = textureLoader.load('test.jpg')
 // spotLightMap.colorSpace = THREE.SRGBColorSpace
 
@@ -89,7 +91,11 @@ const coneMaterial = new THREE.ShaderMaterial({
     vertexShader : vertexRetro,
     fragmentShader : fragmentRetro,
     transparent:true,
-    //blending:THREE.AdditiveBlending
+    opacity:0,
+    uniforms : {
+        uTime:{value : 0},
+        uColor:{value : new THREE.Vector3(1,1,1)}
+    },
 })
 const cone = new THREE.Mesh(coneGeometry, coneMaterial); 
 cone.position.set(0.05,2.35,-2.35)
@@ -97,18 +103,29 @@ cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
 console.log(cone.geometry.boundingBox, cone.position);
 
-const cone2Geometry = new THREE.ConeGeometry(0.5,2)
-const cone2Material = new THREE.ShaderMaterial({
-    vertexShader : vertexRetrobis,
-    fragmentShader : fragmentRetrobis,
-    transparent:true,
-    //blending:THREE.AdditiveBlending
+// const cone2Geometry = new THREE.ConeGeometry(0.5,2)
+// const cone2Material = new THREE.ShaderMaterial({
+//     vertexShader : vertexRetro,
+//     fragmentShader : fragmentRetro,
+//     // transparent:true,
+//     // blendColor: 
+//     uniforms : {
+//         uTime:{value : 0},
+//         uColor:{value : new THREE.Vector3(0.2,0.2,1)}
+//     },
 
+// })
+// const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
+// cone2.position.set(0.05,2.35,-2.35)
+// cone2.rotation.x=Math.PI/2.5
+
+const plastiqueNoir = new THREE.MeshBasicMaterial({
+    color:0x161616
 })
-const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
-cone2.position.set(0.05,2.35,-2.35)
-cone2.rotation.x=Math.PI/2.5
 
+const plastiqueNoirClair = new THREE.MeshBasicMaterial({
+    color:0x222222
+})
 
 
 const pancarteBaked = textureLoader.load('PANCARTE.jpg')
@@ -123,20 +140,57 @@ const clavierMat =new THREE.MeshBasicMaterial({
 
 })
 
-scene.add( cone2,cone );
+const vitreNoir = new THREE.MeshBasicMaterial({
+    color:0x111111,
+    transparent:true,
+    opacity:0.9
+})
+
+const vitreGrise = new THREE.MeshBasicMaterial({
+    color:0x333333,
+    transparent:true,
+    opacity:0.3
+})
+
+const metalGris = new THREE.MeshBasicMaterial({
+    color:0x959692
+})
+const textMat = new THREE.MeshBasicMaterial({
+    color:0xffffff
+})
+scene.add( cone );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
     const sol = gltf.scene.children.find(child=>child.name === 'sol')
     const plafond = gltf.scene.children.find(child =>child.name === 'plafond')
-    const all = gltf.scene.children.filter(child=>['hautRetro','hautTable', 'tableBord','tableProf', 'controleRetro', 'loquetPorte','murFenetre', 'murFond', 'murPorte','murVideo', 'radiateur'].includes(child.name))
+    const all = gltf.scene.children.filter(child=>['hautRetro','hautTable', 'tableBord','tableProf', 'controleRetro','murFenetre', 'murFond', 'murPorte','murVideo', 'radiateur', 'piedOrdi'].includes(child.name))
     const mobilier = gltf.scene.children.filter(child=>['chaises','enceintes', 'myScreen','porteManteau','pancarteDeust','rétro','rétroprojecteur'].includes(child.name))
     const pancarte = gltf.scene.children.find(child=>child.name=="liègePancarte")
     const pancarteMur = gltf.scene.children.find(child=>child.name=='liègeMur')
-    const ordis = gltf.scene.children.find(child=>child.name=='ordis')
-    // const claviers = gltf.scene.children.find(child=>child.name=='claviers')
+    const ordis = gltf.scene.children.filter(child=>["claviers","souris","ordis"].includes(child.name))
+    const touches = gltf.scene.children.find(child=>child.name=='touches')
+    const vitre1 = gltf.scene.children.find(child=>child.name=="vitre1")
+    const fenetre = gltf.scene.children.find(child=>child.name=="fenetres")
+    const vitreRetro = gltf.scene.children.find(child=>child.name=="vitreRétro")
+    const myecran = gltf.scene.children.find(child=>child.name=="écran")
+    const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
+    const texte = gltf.scene.children.find(child=>child.name=="Texte")
 
-    ordis.material = ordiBakedMaterial
+    texte.material = textMat
+
+
+    objetMetal.material = metalGris
+
+    fenetre.material = vitre
+    vitre1.material = vitreNoir
+    myecran.material = vitreNoir
+
+    vitreRetro.material = vitreGrise
+
+    ordis.forEach(ordi=>ordi.material = plastiqueNoir)
+    // const claviers = gltf.scene.children.find(child=>child.name=='claviers')
+    touches.material = plastiqueNoirClair
     // claviers.material = ordiPiedBakedMaterial
     pancarte.material = pancarteMat
     pancarteMur.material = pancarteMurMAt
@@ -162,9 +216,6 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     // gui.add(spotLight, 'intensity', 1,200)
     // gui.add(spotLight, 'decay', 0.1,3)
 
-    
-
-
     // const spotLightHelper = new THREE.SpotLightHelper(spotLight)
 
     // scene.add(spotLight,spotLightHelper)
@@ -179,7 +230,7 @@ const sizes = {
 // Camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height)
 camera.position.set(-2,2,5)
-camera.rotation.set(-0.23,-0.17,-0.04)
+camera.lookAt(-1,-5,0.5)
 
 scene.add(camera)
 const controls = new OrbitControls(camera, canvas)
@@ -192,6 +243,23 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+function onPointerMove( event ) {
+
+	// calculate pointer position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') document.querySelector('body').style.cursor ='pointer' 
+    else document.querySelector('body').style.cursor ='default'
+
+}
+
+window.addEventListener( 'pointermove', onPointerMove );
 
 window.addEventListener('resize', () =>
 {
@@ -211,6 +279,16 @@ window.addEventListener('resize', () =>
 
 const clock = new THREE.Clock()
 
+document.addEventListener('click',e=>{
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro')
+    {
+        const obj = intersects[0]
+        console.log(obj.object);
+        camera.position.set(obj.object.position.x,obj.object.position.y,obj.object.position.z)
+    }
+
+})
+
 //Animation 
 function tick(){
     const elapsedTime = clock.getElapsedTime()
@@ -218,6 +296,15 @@ function tick(){
     controls.update()
 
     renderer.render(scene, camera)
+
+    cone.material.uniforms.uTime.value = elapsedTime
+    // cone2.material.uniforms.uTime.value = elapsedTime
+
+    raycaster.setFromCamera( pointer, camera );
+
+	// calculate objects intersecting the picking ray
+	intersects = raycaster.intersectObjects( scene.children );
+
 
     window.requestAnimationFrame(tick)
     
