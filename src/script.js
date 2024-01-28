@@ -228,15 +228,33 @@ const sizes = {
 }
 
 // Camera
+
+const cameraOrigin = {
+    position:{
+        x: -2.18,
+        y: 2,
+        z:5
+    },
+    rotation:{
+        x : -0.22071956777155788,
+        y : -0.25277438140050495,
+        z:-0.05605543549766235
+    }
+}
+
+const interview = {
+
+}
+
+
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height,0.1,40)
-camera.position.set(-2.18,2,5)
-camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
+camera.position.set(cameraOrigin.position.x,cameraOrigin.position.y,cameraOrigin.position.z)
+camera.rotation.set(cameraOrigin.rotation.x,cameraOrigin.rotation.y,cameraOrigin.rotation.z)
 
 
 scene.add(camera)
 // const controls = new OrbitControls(camera, canvas)
 
-camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -257,7 +275,7 @@ function onPointerMove( event ) {
 	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') document.querySelector('body').style.cursor ='pointer' 
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur') document.querySelector('body').style.cursor ='pointer' 
     else document.querySelector('body').style.cursor ='default'
 
 }
@@ -282,43 +300,71 @@ window.addEventListener('resize', () =>
 
 const clock = new THREE.Clock()
 let interObj
+let plusZ
 document.addEventListener('click',e=>{
-    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro')
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
     {   
+        plusZ = 0.5
         interObj = intersects[0]
+        if(interObj.object.name === "toileRetro"){
+            plusZ = 2.5
+        }
         arriveEcran()
 
     }
 
     function arriveEcran(e){
-        camera.rotation.set(0,0,0)
-        let vect = new THREE.Vector3(interObj.object.position.x-camera.position.x,
-            interObj.object.position.y -camera.position.y,
-            interObj.object.position.z - camera.position.z +0.5)
-            let vectNorm = new THREE.Vector3(interObj.object.position.x-camera.position.x,
-                interObj.object.position.y -camera.position.y,
-                interObj.object.position.z - camera.position.z +0.5)
 
-        camera.translateOnAxis(vectNorm.normalize(),0.1)
-        console.log(vect.x*vect.x+vect.y*vect.y+vect.z*vect.z);
+        let vectPosNorm = new THREE.Vector3(interObj.object.position.x-camera.position.x,
+        interObj.object.position.y -camera.position.y,
+        interObj.object.position.z - camera.position.z + plusZ)
 
-        if(Math.sqrt(vect.x*vect.x+vect.y*vect.y+vect.z*vect.z)>0.05){
-        requestAnimationFrame(arriveEcran)
-            
-        } 
+        let vectRotNorm = new THREE.Vector3(interObj.object.rotation.x-camera.rotation.x,
+        interObj.object.rotation.y -camera.rotation.y,
+        interObj.object.rotation.z - camera.rotation.z)
+        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05){
+            requestAnimationFrame(arriveEcran)
+                            
+        }     
 
-
-        
-        
+        camera.translateOnAxis(vectPosNorm.normalize(),0.05)
+        if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
+            camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
+    
+        }
+    
        
     }
 
 })
-document.querySelector('ul').addEventListener('click',e=>{
+document.querySelector('#accueil').addEventListener('click',e=>{
     e.stopPropagation()
-    camera.position.set(-2.18,2,5)
-    camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
+   accueil()
 })
+
+function accueil(){
+
+        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
+        cameraOrigin.position.y -camera.position.y,
+        cameraOrigin.position.z - camera.position.z)
+
+        let vectRotNorm = new THREE.Vector3(cameraOrigin.rotation.x-camera.rotation.x,
+        cameraOrigin.rotation.y -camera.rotation.y,
+        cameraOrigin.rotation.z - camera.rotation.z)
+    
+        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
+            requestAnimationFrame(accueil)
+                        
+        }     
+
+    camera.translateOnAxis(vectPosNorm.normalize(),0.05)
+
+    if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
+        camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
+
+    }
+
+}
 
 //Animation 
 function tick(){
