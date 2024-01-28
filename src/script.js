@@ -1,15 +1,15 @@
-
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import vertexRetro from './shader/retroVertex.glsl';
 import fragmentRetro from './shader/retroFragment.glsl';
-import vertexRetrobis from './shader/retroVertexbis.glsl';
-import fragmentRetrobis from './shader/retroFragmentbis.glsl';
+import vertexEcran from './shader/ecranVertex.glsl';
+import fragmentEcran from './shader/ecranFragment.glsl';
+import retroInFragment from './shader/retroInFragment.glsl'
+import retroInVertex from './shader/retroInVertex.glsl'
 
 
-const cubeTextureLoader = new THREE.CubeTextureLoader()
 const gui = new GUI();
 
 // Canvas
@@ -89,38 +89,37 @@ const vitre = new THREE.MeshBasicMaterial({
 
 const milieuProj = {}
 
-const coneGeometry = new THREE.ConeGeometry(0.6,2)
+const coneGeometry = new THREE.ConeGeometry(0.4,1)
 const coneMaterial = new THREE.ShaderMaterial({
     vertexShader : vertexRetro,
     fragmentShader : fragmentRetro,
     transparent:true,
-    opacity:0,
-    uniforms : {
-        uTime:{value : 0},
-        uColor:{value : new THREE.Vector3(1,1,1)}
-    },
 })
 const cone = new THREE.Mesh(coneGeometry, coneMaterial); 
-cone.position.set(0.05,2.35,-2.35)
+cone.position.set(0.05,2.5,-1.88)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
 console.log(cone.geometry.boundingBox, cone.position);
 
-// const cone2Geometry = new THREE.ConeGeometry(0.5,2)
-// const cone2Material = new THREE.ShaderMaterial({
-//     vertexShader : vertexRetro,
-//     fragmentShader : fragmentRetro,
-//     // transparent:true,
-//     // blendColor: 
-//     uniforms : {
-//         uTime:{value : 0},
-//         uColor:{value : new THREE.Vector3(0.2,0.2,1)}
-//     },
+const ecranMat = new THREE.ShaderMaterial({
+    vertexShader : vertexEcran,
+    fragmentShader : fragmentEcran
+})
 
-// })
-// const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
-// cone2.position.set(0.05,2.35,-2.35)
-// cone2.rotation.x=Math.PI/2.5
+const cone2Geometry = new THREE.ConeGeometry(0.1,0.5)
+const cone2Material = new THREE.ShaderMaterial({
+    vertexShader : retroInVertex,
+    fragmentShader : retroInFragment,
+    // transparent:true,
+    blending: THREE.AdditiveBlending,
+    uniforms : {
+        uTime:{value : 0},
+    },
+
+})
+const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
+cone2.position.set(0.05,2.57,-1.66)
+cone2.rotation.x=Math.PI/2.5
 
 const plastiqueNoir = new THREE.MeshBasicMaterial({
     color:0x161616
@@ -133,11 +132,6 @@ const plastiqueNoirClair = new THREE.MeshBasicMaterial({
 
 const pancarteMat = new THREE.MeshBasicMaterial({
     map: pancarteBaked
-})
-
-const clavierMat =new THREE.MeshBasicMaterial({
-    color:0x1E1B1B,
-
 })
 
 const vitreNoir = new THREE.MeshBasicMaterial({
@@ -158,7 +152,7 @@ const metalGris = new THREE.MeshBasicMaterial({
 const textMat = new THREE.MeshBasicMaterial({
     color:0xffffff
 })
-scene.add( cone );
+scene.add( cone,cone2 );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
@@ -176,7 +170,9 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const myecran = gltf.scene.children.find(child=>child.name=="écran")
     const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
     const texte = gltf.scene.children.find(child=>child.name=="Texte")
+    const ecrans = gltf.scene.children.filter(child=>/écrans[0-9]{2}/.test(child.name))
 
+    ecrans.forEach(ecran=>ecran.material = ecranMat)
     texte.material = textMat
 
 
@@ -243,17 +239,53 @@ const cameraOrigin = {
 }
 
 const interview = {
+    position:{
+        x:-0.0304374098777771,
+        y:1.4881799221038818,
+        z:-3.3039751052856445
 
+    }
+}
+
+const infos = {
+    position : {
+        x:-0.3777580261230469,
+        y:0.8755115270614624,
+        z:0.00133720874786377
+    }
+}
+const programme = {
+    position:{
+        x:-2.4275617599487305,
+        y:0.8755115270614624,
+        z:-1.778724193572998
+    }
+}
+
+const contact = {
+    position:{
+        x:2.8654136657714844,
+        y:1.4804919958114624,
+        z:-5.4577956199646
+    },
+    rotation:{
+        y:-Math.PI/2
+    }
 }
 
 
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height,0.1,40)
+
+const controls = new OrbitControls(camera, canvas)
+controls.enabled = false
+
 camera.position.set(cameraOrigin.position.x,cameraOrigin.position.y,cameraOrigin.position.z)
 camera.rotation.set(cameraOrigin.rotation.x,cameraOrigin.rotation.y,cameraOrigin.rotation.z)
 
 
+
 scene.add(camera)
-// const controls = new OrbitControls(camera, canvas)
+
 
 
 // Renderer
@@ -299,48 +331,135 @@ window.addEventListener('resize', () =>
 
 
 const clock = new THREE.Clock()
-let interObj
-let plusZ
-document.addEventListener('click',e=>{
+const objPos = new THREE.Vector3()
+const rotation = {
+    x:0,
+    y:0,
+    z:0
+}
+document.addEventListener('click',letsGo)
+
+function letsGo(e){
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
     {   
-        plusZ = 0.5
-        interObj = intersects[0]
-        if(interObj.object.name === "toileRetro"){
-            plusZ = 2.5
+        rotation.y = 0
+        let interObj = intersects[0].object
+
+        objPos.x = interObj.position.x
+        objPos.y = interObj.position.y
+        objPos.z = interObj.position.z
+        if(/écrans[0-9]{2}/.test(interObj.name)){
+            objPos.z += 0.5
+        }
+        else if(interObj.name === "toileRetro"){
+            objPos.z += 2.5
+        }
+        else if(interObj.name === "liègeMur"){
+            rotation.y = Math.PI/2
+            objPos.x +=1
         }
         arriveEcran()
 
     }
 
-    function arriveEcran(e){
+}
 
-        let vectPosNorm = new THREE.Vector3(interObj.object.position.x-camera.position.x,
-        interObj.object.position.y -camera.position.y,
-        interObj.object.position.z - camera.position.z + plusZ)
+function arriveEcran(e){
 
-        let vectRotNorm = new THREE.Vector3(interObj.object.rotation.x-camera.rotation.x,
-        interObj.object.rotation.y -camera.rotation.y,
-        interObj.object.rotation.z - camera.rotation.z)
-        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05){
-            requestAnimationFrame(arriveEcran)
-                            
-        }     
+    let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
+    objPos.y -camera.position.y,
+    objPos.z - camera.position.z)
+    console.log(rotation.y);
 
-        camera.translateOnAxis(vectPosNorm.normalize(),0.05)
-        if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
-            camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
-    
-        }
-    
-       
+    let vectRotNorm = new THREE.Vector3(rotation.x-camera.rotation.x,
+    rotation.y -camera.rotation.y,
+    rotation.z - camera.rotation.z)
+    console.log(vectRotNorm);
+    if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 || Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05){
+        requestAnimationFrame(arriveEcran)
+                        
+    }     
+    if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
+    camera.translateOnAxis(vectPosNorm.normalize(),0.05)
+
     }
 
+    if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
+        camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
+
+    }
+
+}
+
+document.querySelector('#infos').addEventListener('click',e=>{
+    e.stopPropagation()
+
+        objPos.x = infos.position.x
+        objPos.y = infos.position.y
+        objPos.z = infos.position.z
+
+        arriveEcran()
 })
+document.querySelector('#programme').addEventListener('click',e=>{
+    e.stopPropagation()
+
+    objPos.x = programme.position.x
+    objPos.y = programme.position.y
+    objPos.z = programme.position.z
+
+    arriveEcran()
+})
+
+document.querySelector('#interviews').addEventListener('click',e=>{
+    e.stopPropagation()
+
+    objPos.x = interview.position.x
+    objPos.y = interview.position.y
+    objPos.z = interview.position.z
+
+    arriveEcran()
+})
+
+document.querySelector('#contact').addEventListener('click',e=>{
+    e.stopPropagation()
+    objPos.x = contact.position.x
+    objPos.y = contact.position.y
+    objPos.z = contact.position.z
+
+    rotation.y = -Math.PI/2
+
+    
+})
+
 document.querySelector('#accueil').addEventListener('click',e=>{
     e.stopPropagation()
    accueil()
 })
+
+document.querySelector('#balade').addEventListener('click',e=>{
+    e.stopPropagation()
+    if(e.target.dataset.lock == "true"){
+        document.removeEventListener("click",letsGo)
+        removeEventListener('pointermove',onPointerMove)
+        controls.update()
+
+        controls.enabled = true
+        console.log(camera.rotation, controls);
+
+        e.target.innerText = "Arrêter la balade"
+        e.target.dataset.lock = "false"
+    }else{  
+        document.addEventListener("click",letsGo)
+        addEventListener('pointermove',onPointerMove)
+        controls.enabled = false
+        e.target.innerText="Se balader"
+        e.target.dataset.lock = "true"
+        accueil()
+
+    }
+ 
+})
+
 
 function accueil(){
 
@@ -352,17 +471,20 @@ function accueil(){
         cameraOrigin.rotation.y -camera.rotation.y,
         cameraOrigin.rotation.z - camera.rotation.z)
     
-        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
+        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 || Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
             requestAnimationFrame(accueil)
+        }
+
+        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
+
+            camera.translateOnAxis(vectPosNorm.normalize(),0.05)
                         
         }     
 
-    camera.translateOnAxis(vectPosNorm.normalize(),0.05)
+        if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
+            camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
 
-    if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
-        camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
-
-    }
+        }
 
 }
 
@@ -374,8 +496,7 @@ function tick(){
 
     renderer.render(scene, camera)
 
-    cone.material.uniforms.uTime.value = elapsedTime
-    // cone2.material.uniforms.uTime.value = elapsedTime
+    cone2.material.uniforms.uTime.value = elapsedTime
 
     raycaster.setFromCamera( pointer, camera );
 
