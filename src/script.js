@@ -1,7 +1,6 @@
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import vertexRetro from './shader/retroVertex.glsl';
@@ -35,6 +34,10 @@ const textureLoader = new THREE.TextureLoader()
 const gltfLoader = new GLTFLoader()
 // gltfLoader.setDRACOLoader(dracoLoader)
 
+
+const pancarteBaked = textureLoader.load('PANCARTE.jpg')
+pancarteBaked.flipY =false
+pancarteBaked.colorSpace = THREE.SRGBColorSpace
 
 const solBakedTexture = textureLoader.load('solEnd2.jpg')
 solBakedTexture.flipY = false
@@ -128,9 +131,6 @@ const plastiqueNoirClair = new THREE.MeshBasicMaterial({
 })
 
 
-const pancarteBaked = textureLoader.load('PANCARTE.jpg')
-pancarteBaked.flipY =false
-pancarteBaked.colorSpace = THREE.SRGBColorSpace
 const pancarteMat = new THREE.MeshBasicMaterial({
     map: pancarteBaked
 })
@@ -228,13 +228,16 @@ const sizes = {
 }
 
 // Camera
-const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height)
-camera.position.set(-2,2,5)
-camera.lookAt(-1,-5,0.5)
+const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height,0.1,40)
+camera.position.set(-2.18,2,5)
+camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
+
 
 scene.add(camera)
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+// const controls = new OrbitControls(camera, canvas)
+
+camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
@@ -278,22 +281,50 @@ window.addEventListener('resize', () =>
 
 
 const clock = new THREE.Clock()
-
+let interObj
 document.addEventListener('click',e=>{
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro')
-    {
-        const obj = intersects[0]
-        console.log(obj.object);
-        camera.position.set(obj.object.position.x,obj.object.position.y,obj.object.position.z)
+    {   
+        interObj = intersects[0]
+        arriveEcran()
+
     }
 
+    function arriveEcran(e){
+        camera.rotation.set(0,0,0)
+        let vect = new THREE.Vector3(interObj.object.position.x-camera.position.x,
+            interObj.object.position.y -camera.position.y,
+            interObj.object.position.z - camera.position.z +0.5)
+            let vectNorm = new THREE.Vector3(interObj.object.position.x-camera.position.x,
+                interObj.object.position.y -camera.position.y,
+                interObj.object.position.z - camera.position.z +0.5)
+
+        camera.translateOnAxis(vectNorm.normalize(),0.1)
+        console.log(vect.x*vect.x+vect.y*vect.y+vect.z*vect.z);
+
+        if(Math.sqrt(vect.x*vect.x+vect.y*vect.y+vect.z*vect.z)>0.05){
+        requestAnimationFrame(arriveEcran)
+            
+        } 
+
+
+        
+        
+       
+    }
+
+})
+document.querySelector('ul').addEventListener('click',e=>{
+    e.stopPropagation()
+    camera.position.set(-2.18,2,5)
+    camera.rotation.set(-0.22071956777155788,-0.25277438140050495,-0.05605543549766235)
 })
 
 //Animation 
 function tick(){
     const elapsedTime = clock.getElapsedTime()
 
-    controls.update()
+    // controls.update()
 
     renderer.render(scene, camera)
 
