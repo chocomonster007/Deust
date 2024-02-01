@@ -103,7 +103,12 @@ console.log(cone.geometry.boundingBox, cone.position);
 
 const ecranMat = new THREE.ShaderMaterial({
     vertexShader : vertexEcran,
-    fragmentShader : fragmentEcran
+    fragmentShader : fragmentEcran,
+    uniforms:{
+        uTime:{
+            value:0
+        }
+    }
 })
 
 const cone2Geometry = new THREE.ConeGeometry(0.1,0.5)
@@ -329,7 +334,6 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-
 const clock = new THREE.Clock()
 const objPos = new THREE.Vector3()
 const rotation = {
@@ -338,7 +342,6 @@ const rotation = {
     z:0
 }
 document.addEventListener('click',letsGo)
-
 function letsGo(e){
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
     {   
@@ -358,37 +361,44 @@ function letsGo(e){
             rotation.y = Math.PI/2
             objPos.x +=1
         }
+
         arriveEcran()
 
     }
 
 }
-
+let time = 0
 function arriveEcran(e){
+    let timeSpend
+    if(e !=undefined && time !=undefined){
+        timeSpend = e-time
+    }else{
+        timeSpend = 0
+    }
 
     let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
     objPos.y -camera.position.y,
     objPos.z - camera.position.z)
-    console.log(rotation.y);
 
     let vectRotNorm = new THREE.Vector3(rotation.x-camera.rotation.x,
     rotation.y -camera.rotation.y,
     rotation.z - camera.rotation.z)
-    console.log(vectRotNorm);
-    if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 || Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05){
-        requestAnimationFrame(arriveEcran)
-                        
-    }     
-    if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
-    camera.translateOnAxis(vectPosNorm.normalize(),0.05)
+    const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+    const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
 
-    }
+    if(PosNorm>0.01 || RotNorm>0.01){
+        requestAnimationFrame(arriveEcran)                
+    }   
+    const normalize = vectPosNorm.clone().normalize()  
+    const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
 
-    if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
-        camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
+    const normalizeBis = vectRotNorm.clone().normalize()  
+    const translationBis = RotNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectRotNorm : normalizeBis;
+   
+    camera.translateOnAxis(translation,timeSpend/100)   
+    camera.rotateOnAxis(translationBis,timeSpend/200)
 
-    }
-
+    time = e
 }
 
 document.querySelector('#infos').addEventListener('click',e=>{
@@ -461,7 +471,14 @@ document.querySelector('#balade').addEventListener('click',e=>{
 })
 
 
-function accueil(){
+function accueil(e){
+    let timeSpend
+    if(e !=undefined && time !=undefined){
+        timeSpend = e-time
+    }else{
+        timeSpend = 0
+    }
+
 
         let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
         cameraOrigin.position.y -camera.position.y,
@@ -470,21 +487,21 @@ function accueil(){
         let vectRotNorm = new THREE.Vector3(cameraOrigin.rotation.x-camera.rotation.x,
         cameraOrigin.rotation.y -camera.rotation.y,
         cameraOrigin.rotation.z - camera.rotation.z)
+        const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+        const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
     
-        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 || Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
+        if(PosNorm>0.05 || RotNorm>0.05 ){
             requestAnimationFrame(accueil)
         }
-
-        if(Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)>0.05 ){
-
-            camera.translateOnAxis(vectPosNorm.normalize(),0.05)
-                        
-        }     
-
-        if(Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)>0.05 ){
-            camera.rotateOnAxis(vectRotNorm.normalize(),0.005)
-
-        }
+        const normalize = vectPosNorm.clone().normalize()  
+        const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
+    
+        const normalizeBis = vectRotNorm.clone().normalize()  
+        const translationBis = RotNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectRotNorm : normalizeBis;
+            camera.translateOnAxis(translation,timeSpend/100)
+                       
+            camera.rotateOnAxis(translationBis,timeSpend/200)
+        time =e
 
 }
 
