@@ -176,7 +176,9 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
     const texte = gltf.scene.children.find(child=>child.name=="Texte")
     const ecrans = gltf.scene.children.filter(child=>/écrans[0-9]{2}/.test(child.name))
+    const toileRetro = gltf.scene.children.find(child=>child.name=="toileRetro")
 
+    toileRetro.material = ecranMat
     ecrans.forEach(ecran=>ecran.material = ecranMat)
     texte.material = textMat
 
@@ -341,12 +343,13 @@ const rotation = {
     y:0,
     z:0
 }
+let interObj
 document.addEventListener('click',letsGo)
 function letsGo(e){
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
     {   
         rotation.y = 0
-        let interObj = intersects[0].object
+        interObj = intersects[0].object
 
         objPos.x = interObj.position.x
         objPos.y = interObj.position.y
@@ -368,6 +371,7 @@ function letsGo(e){
 
 }
 let time = 0
+let timeAnim = 0
 function arriveEcran(e){
     let timeSpend
     if(e !=undefined && time !=undefined){
@@ -376,29 +380,44 @@ function arriveEcran(e){
         timeSpend = 0
     }
 
-    let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
-    objPos.y -camera.position.y,
-    objPos.z - camera.position.z)
-
     let vectRotNorm = new THREE.Vector3(rotation.x-camera.rotation.x,
     rotation.y -camera.rotation.y,
     rotation.z - camera.rotation.z)
-    const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+
     const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
 
-    if(PosNorm>0.01 || RotNorm>0.01){
-        requestAnimationFrame(arriveEcran)                
-    }   
+    const normalizeBis = vectRotNorm.clone().normalize()  
+    const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
+    camera.rotateOnAxis(translationBis,timeSpend/200)
+    console.log(camera.quaternion);
+    
+    
+    let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
+        objPos.y -camera.position.y,
+        objPos.z - camera.position.z)
+    const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+    
     const normalize = vectPosNorm.clone().normalize()  
     const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-
-    const normalizeBis = vectRotNorm.clone().normalize()  
-    const translationBis = RotNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectRotNorm : normalizeBis;
-   
-    camera.translateOnAxis(translation,timeSpend/100)   
-    camera.rotateOnAxis(translationBis,timeSpend/200)
+    // camera.translateOnAxis(translation,timeSpend/100)
+    camera.translateX(translation.x*timeSpend/100)
+    camera.translateY(translation.y*timeSpend/100)   
+    camera.translateZ(translation.z*timeSpend/100)   
 
     time = e
+    if(PosNorm>0.01 || RotNorm>0.01){
+        requestAnimationFrame(arriveEcran)                
+    }else{
+        // const clockBis = new THREE.Clock()
+        // timeAnim = clockBis.getElapsedTime()
+        // animEcran()
+    }  
+}
+
+function animEcran(){
+    console.log(interObj);
+    interObj.material.uniforms.uTime.value = timeAnim
+    requestAnimationFrame(animEcran)
 }
 
 document.querySelector('#infos').addEventListener('click',e=>{
@@ -451,9 +470,16 @@ document.querySelector('#balade').addEventListener('click',e=>{
     if(e.target.dataset.lock == "true"){
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
-        controls.update()
+        const cameraBefore = new THREE.Vector3()
+        camera.getWorldDirection(cameraBefore)
+        controls.target = cameraBefore
+        camera.lookAt(cameraBefore)
 
         controls.enabled = true
+        controls.autoRotate = true
+        camera.lookAt(cameraBefore)
+        controls.target = cameraBefore
+
         console.log(camera.rotation, controls);
 
         e.target.innerText = "Arrêter la balade"
@@ -479,10 +505,9 @@ function accueil(e){
         timeSpend = 0
     }
 
-
-        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
-        cameraOrigin.position.y -camera.position.y,
-        cameraOrigin.position.z - camera.position.z)
+        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x-camera.rotation.x,
+        cameraOrigin.position.y -camera.position.y-camera.rotation.y,
+        cameraOrigin.position.z - camera.position.z-camera.rotation.z)
 
         let vectRotNorm = new THREE.Vector3(cameraOrigin.rotation.x-camera.rotation.x,
         cameraOrigin.rotation.y -camera.rotation.y,
@@ -490,7 +515,7 @@ function accueil(e){
         const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
         const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
     
-        if(PosNorm>0.05 || RotNorm>0.05 ){
+        if(PosNorm>0.05 || RotNorm>0.005 ){
             requestAnimationFrame(accueil)
         }
         const normalize = vectPosNorm.clone().normalize()  
