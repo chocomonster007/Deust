@@ -87,7 +87,6 @@ const vitre = new THREE.MeshBasicMaterial({
 // const spotLightMap = textureLoader.load('test.jpg')
 // spotLightMap.colorSpace = THREE.SRGBColorSpace
 
-const milieuProj = {}
 
 const coneGeometry = new THREE.ConeGeometry(0.4,1)
 const coneMaterial = new THREE.ShaderMaterial({
@@ -99,7 +98,6 @@ const cone = new THREE.Mesh(coneGeometry, coneMaterial);
 cone.position.set(0.05,2.5,-1.88)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
-console.log(cone.geometry.boundingBox, cone.position);
 
 const ecranMat = new THREE.ShaderMaterial({
     vertexShader : vertexEcran,
@@ -389,7 +387,6 @@ function arriveEcran(e){
     const normalizeBis = vectRotNorm.clone().normalize()  
     const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
     camera.rotateOnAxis(translationBis,timeSpend/200)
-    console.log(camera.quaternion);
     
     
     let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
@@ -408,14 +405,14 @@ function arriveEcran(e){
     if(PosNorm>0.01 || RotNorm>0.01){
         requestAnimationFrame(arriveEcran)                
     }else{
-        // const clockBis = new THREE.Clock()
-        // timeAnim = clockBis.getElapsedTime()
-        // animEcran()
+        const clockBis = new THREE.Clock()
+        timeAnim = clockBis.getElapsedTime()
+        animEcran()
     }  
 }
 
 function animEcran(){
-    console.log(interObj);
+    console.log(timeAnim);
     interObj.material.uniforms.uTime.value = timeAnim
     requestAnimationFrame(animEcran)
 }
@@ -480,7 +477,6 @@ document.querySelector('#balade').addEventListener('click',e=>{
         camera.lookAt(cameraBefore)
         controls.target = cameraBefore
 
-        console.log(camera.rotation, controls);
 
         e.target.innerText = "Arrêter la balade"
         e.target.dataset.lock = "false"
