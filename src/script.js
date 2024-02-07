@@ -8,7 +8,8 @@ import vertexEcran from './shader/ecranVertex.glsl';
 import fragmentEcran from './shader/ecranFragment.glsl';
 import retroInFragment from './shader/retroInFragment.glsl'
 import retroInVertex from './shader/retroInVertex.glsl'
-
+import toileFragment from './shader/toileFragment.glsl'
+import toileVertex from './shader/toileVertex.glsl'
 
 const gui = new GUI();
 
@@ -109,6 +110,16 @@ const ecranMat = new THREE.ShaderMaterial({
     }
 })
 
+const toileMat = new THREE.ShaderMaterial({
+    vertexShader : toileVertex,
+    fragmentShader : toileFragment,
+    uniforms:{
+        uTime:{
+            value:0
+        }
+    }
+})
+
 const cone2Geometry = new THREE.ConeGeometry(0.1,0.5)
 const cone2Material = new THREE.ShaderMaterial({
     vertexShader : retroInVertex,
@@ -177,7 +188,8 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const ecrans = gltf.scene.children.filter(child=>/écrans[0-9]{2}/.test(child.name))
     const toileRetro = gltf.scene.children.find(child=>child.name=="toileRetro")
 
-    toileRetro.material = ecranMat
+    toileRetro.material = toileMat
+
     ecrans.forEach(ecran=>ecran.material = ecranMat)
     texte.material = textMat
 
@@ -360,10 +372,10 @@ function letsGo(){
             objPos.z += 2.5
         }
         else if(interObj.name === "liègeMur"){
-            rotation.y = Math.PI/2
-            objPos.x +=1
+            rotation.y = -Math.PI/2
+            objPos.x -=1
         }
-
+        rotOn = 1
         arriveEcran()
 
     }
@@ -371,6 +383,7 @@ function letsGo(){
 }
 let time = 0
 let timeAnim = 0
+let rotOn = 1
 function arriveEcran(e){
     let timeSpend
     if(e !=undefined && time !=undefined){
@@ -378,10 +391,9 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-
-    let vectRotNorm = new THREE.Vector3(rotation.x-camera.rotation.x,
-    rotation.y -camera.rotation.y,
-    rotation.z - camera.rotation.z)
+    let vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x)*rotOn,
+    (rotation.y -camera.rotation.y)*rotOn,
+    (rotation.z - camera.rotation.z)*rotOn)
 
     const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
 
@@ -406,15 +418,13 @@ function arriveEcran(e){
     if(PosNorm>0.05 || RotNorm>0.01){
         requestAnimationFrame(arriveEcran)                
     }else{
-        // const clockBis = new THREE.Clock()
-        // timeAnim = clockBis.getElapsedTime()
-        // animEcran()
+        timeAnim = new THREE.Clock()
+        animEcran()
     }  
 }
 
 function animEcran(){
-    console.log(timeAnim);
-    interObj.material.uniforms.uTime.value = timeAnim
+    interObj.material.uniforms.uTime.value = timeAnim.getElapsedTime()
     requestAnimationFrame(animEcran)
 }
 
