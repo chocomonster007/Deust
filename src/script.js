@@ -155,6 +155,7 @@ const metalGris = new THREE.MeshBasicMaterial({
 const textMat = new THREE.MeshBasicMaterial({
     color:0xffffff
 })
+
 scene.add( cone,cone2 );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
@@ -343,7 +344,7 @@ const rotation = {
 }
 let interObj
 document.addEventListener('click',letsGo)
-function letsGo(e){
+function letsGo(){
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
     {   
         rotation.y = 0
@@ -388,26 +389,26 @@ function arriveEcran(e){
     const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
     camera.rotateOnAxis(translationBis,timeSpend/200)
     
-    
+    const quaternion = new THREE.Quaternion()
+    quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
+
     let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
         objPos.y -camera.position.y,
         objPos.z - camera.position.z)
+    vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
     const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
     
-    const normalize = vectPosNorm.clone().normalize()  
+    const normalize = vectPosNorm.clone().normalize()
     const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-    // camera.translateOnAxis(translation,timeSpend/100)
-    camera.translateX(translation.x*timeSpend/100)
-    camera.translateY(translation.y*timeSpend/100)   
-    camera.translateZ(translation.z*timeSpend/100)   
+    camera.translateOnAxis(translation,timeSpend/100)
 
     time = e
-    if(PosNorm>0.01 || RotNorm>0.01){
+    if(PosNorm>0.05 || RotNorm>0.01){
         requestAnimationFrame(arriveEcran)                
     }else{
-        const clockBis = new THREE.Clock()
-        timeAnim = clockBis.getElapsedTime()
-        animEcran()
+        // const clockBis = new THREE.Clock()
+        // timeAnim = clockBis.getElapsedTime()
+        // animEcran()
     }  
 }
 
@@ -501,9 +502,13 @@ function accueil(e){
         timeSpend = 0
     }
 
-        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x-camera.rotation.x,
-        cameraOrigin.position.y -camera.position.y-camera.rotation.y,
-        cameraOrigin.position.z - camera.position.z-camera.rotation.z)
+        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
+        cameraOrigin.position.y -camera.position.y,
+        cameraOrigin.position.z - camera.position.z)
+
+        const quaternion = new THREE.Quaternion()
+        quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
+        vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
 
         let vectRotNorm = new THREE.Vector3(cameraOrigin.rotation.x-camera.rotation.x,
         cameraOrigin.rotation.y -camera.rotation.y,
@@ -511,17 +516,17 @@ function accueil(e){
         const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
         const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
     
-        if(PosNorm>0.05 || RotNorm>0.005 ){
-            requestAnimationFrame(accueil)
-        }
         const normalize = vectPosNorm.clone().normalize()  
         const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
     
         const normalizeBis = vectRotNorm.clone().normalize()  
-        const translationBis = RotNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectRotNorm : normalizeBis;
+        const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
             camera.translateOnAxis(translation,timeSpend/100)
                        
             camera.rotateOnAxis(translationBis,timeSpend/200)
+            if(PosNorm>0.05 || RotNorm>0.01 ){
+                requestAnimationFrame(accueil)
+            }
         time =e
 
 }
