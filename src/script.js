@@ -384,6 +384,7 @@ function letsGo(){
 let time = 0
 let timeAnim = 0
 let rotOn = 1
+// let positiontoReach
 function arriveEcran(e){
     let timeSpend
     if(e !=undefined && time !=undefined){
@@ -419,12 +420,14 @@ function arriveEcran(e){
         requestAnimationFrame(arriveEcran)                
     }else{
         timeAnim = new THREE.Clock()
+        // positiontoReach = new THREE.Vector3()
         animEcran()
     }  
 }
 
 function animEcran(){
     interObj.material.uniforms.uTime.value = timeAnim.getElapsedTime()
+    // camera.translateOnAxis(new THREE.Vector3(0,0,-0.5),0.016)
     requestAnimationFrame(animEcran)
 }
 
