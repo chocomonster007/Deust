@@ -366,15 +366,16 @@ function letsGo(){
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
         if(/écrans[0-9]{2}/.test(interObj.name)){
-            objPos.z += 0.5
+            objPos.z += 0.2
         }
         else if(interObj.name === "toileRetro"){
-            objPos.z += 2.5
+            objPos.z += 1.5
         }
         else if(interObj.name === "liègeMur"){
             rotation.y = -Math.PI/2
             objPos.x -=1
         }
+        
         rotOn = 1
         arriveEcran()
 
@@ -384,7 +385,6 @@ function letsGo(){
 let time = 0
 let timeAnim = 0
 let rotOn = 1
-// let positiontoReach
 function arriveEcran(e){
     let timeSpend
     if(e !=undefined && time !=undefined){
@@ -413,22 +413,24 @@ function arriveEcran(e){
     
     const normalize = vectPosNorm.clone().normalize()
     const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-    camera.translateOnAxis(translation,timeSpend/100)
+    camera.translateOnAxis(translation,timeSpend/70)
 
     time = e
-    if(PosNorm>0.05 || RotNorm>0.01){
+    if(PosNorm>0.05 || RotNorm>0.05){
         requestAnimationFrame(arriveEcran)                
-    }else{
+    }
+    if(PosNorm < 0.4){
         timeAnim = new THREE.Clock()
-        // positiontoReach = new THREE.Vector3()
         animEcran()
     }  
 }
-
 function animEcran(){
-    interObj.material.uniforms.uTime.value = timeAnim.getElapsedTime()
-    // camera.translateOnAxis(new THREE.Vector3(0,0,-0.5),0.016)
-    requestAnimationFrame(animEcran)
+    const elapsedTimeAnim = timeAnim.getElapsedTime()
+    interObj.material.uniforms.uTime.value = elapsedTimeAnim
+    if(1-Math.abs(0.29*0.14)<1.01-elapsedTimeAnim/10){
+        requestAnimationFrame(animEcran)
+    }
+
 }
 
 document.querySelector('#infos').addEventListener('click',e=>{
@@ -473,6 +475,7 @@ document.querySelector('#contact').addEventListener('click',e=>{
 
 document.querySelector('#accueil').addEventListener('click',e=>{
     e.stopPropagation()
+rotOn =1
    accueil()
 })
 
@@ -514,32 +517,38 @@ function accueil(e){
     }else{
         timeSpend = 0
     }
+    console.log(timeSpend);
+        interObj.material.uniforms.uTime.value = 0
 
-        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
-        cameraOrigin.position.y -camera.position.y,
-        cameraOrigin.position.z - camera.position.z)
+        let vectRotNorm = new THREE.Vector3((cameraOrigin.rotation.x-camera.rotation.x),
+        (cameraOrigin.rotation.y -camera.rotation.y),
+        (cameraOrigin.rotation.z - camera.rotation.z))
 
-        const quaternion = new THREE.Quaternion()
-        quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
-        vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
-
-        let vectRotNorm = new THREE.Vector3(cameraOrigin.rotation.x-camera.rotation.x,
-        cameraOrigin.rotation.y -camera.rotation.y,
-        cameraOrigin.rotation.z - camera.rotation.z)
-        const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
         const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
-    
-        const normalize = vectPosNorm.clone().normalize()  
-        const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-    
         const normalizeBis = vectRotNorm.clone().normalize()  
         const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
+        camera.rotateOnAxis(translationBis,timeSpend/200)
+   
+
+        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
+            cameraOrigin.position.y -camera.position.y,
+            cameraOrigin.position.z - camera.position.z)
+    
+            const quaternion = new THREE.Quaternion()
+            quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
+            vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
+        const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+
+
+        const normalize = vectPosNorm.clone().normalize()  
+        const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
+
             camera.translateOnAxis(translation,timeSpend/100)
                        
-            camera.rotateOnAxis(translationBis,timeSpend/200)
-            if(PosNorm>0.05 || RotNorm>0.01 ){
+            if(PosNorm>0.05 || RotNorm>0.05 ){
                 requestAnimationFrame(accueil)
             }
+
         time =e
 
 }
