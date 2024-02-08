@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import vertexRetro from './shader/retroVertex.glsl';
 import fragmentRetro from './shader/retroFragment.glsl';
 import vertexEcran from './shader/ecranVertex.glsl';
@@ -10,8 +9,8 @@ import retroInFragment from './shader/retroInFragment.glsl'
 import retroInVertex from './shader/retroInVertex.glsl'
 import toileFragment from './shader/toileFragment.glsl'
 import toileVertex from './shader/toileVertex.glsl'
+import { gsap } from 'gsap'
 
-const gui = new GUI();
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -21,19 +20,76 @@ const scene = new THREE.Scene()
 
 let intersects
 
+const loadingBarElement = document.querySelector('.loading-bar')
+const menu = document.querySelector('header')
+
+
+const loadingManager = new THREE.LoadingManager(
+    // Loaded
+    () =>
+    {
+        // Wait a little
+        window.setTimeout(() =>
+        {
+            // Animate overlay
+            gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 1.5, value: 0, delay: 0.5 })
+
+            // Update loadingBarElement
+            loadingBarElement.classList.add('ended')
+            loadingBarElement.style.transform = ''
+            gsap.to("header",{ duration: 1.5, opacity: 1, delay: 0.5 })
+        }, 500)
+
+    },
+
+    // Progress
+    (itemUrl, itemsLoaded, itemsTotal) =>
+    {
+        // Calculate the progress and update the loadingBarElement
+        const progressRatio = itemsLoaded / itemsTotal
+        loadingBarElement.style.transform = `scaleX(${progressRatio})`
+    }
+)
+
 /**
  * Loaders
  */
 // Texture loader
-const textureLoader = new THREE.TextureLoader()
+const textureLoader = new THREE.TextureLoader(loadingManager)
 
 // Draco loader
 // const dracoLoader = new DRACOLoader()
 // dracoLoader.setDecoderPath('draco/')
 
 // GLTF loader
-const gltfLoader = new GLTFLoader()
+const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
+
+const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1)
+const overlayMaterial = new THREE.ShaderMaterial({
+    // wireframe: true,
+    transparent: true,
+    uniforms:
+    {
+        uAlpha: { value: 1 }
+    },
+    vertexShader: `
+        void main()
+        {
+            gl_Position = vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform float uAlpha;
+
+        void main()
+        {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, uAlpha);
+        }
+    `
+})
+const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
+scene.add(overlay)
 
 
 const pancarteBaked = textureLoader.load('PANCARTE.jpg')
@@ -300,11 +356,7 @@ controls.enabled = false
 camera.position.set(cameraOrigin.position.x,cameraOrigin.position.y,cameraOrigin.position.z)
 camera.rotation.set(cameraOrigin.rotation.x,cameraOrigin.rotation.y,cameraOrigin.rotation.z)
 
-
-
 scene.add(camera)
-
-
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -361,12 +413,16 @@ function letsGo(){
     {   
         rotation.y = 0
         interObj = intersects[0].object
+        rotation.x=0
+        rotation.y=0
+        rotation.z=0
 
         objPos.x = interObj.position.x
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
         if(/écrans[0-9]{2}/.test(interObj.name)){
             objPos.z += 0.2
+            ecranAnim = true
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
@@ -376,15 +432,18 @@ function letsGo(){
             objPos.x -=1
         }
         
-        rotOn = 1
+        time=undefined
         arriveEcran()
 
     }
 
 }
-let time = 0
+
+let time = undefined
 let timeAnim = 0
-let rotOn = 1
+
+let ecranAnim = false
+
 function arriveEcran(e){
     let timeSpend
     if(e !=undefined && time !=undefined){
@@ -392,9 +451,9 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-    let vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x)*rotOn,
-    (rotation.y -camera.rotation.y)*rotOn,
-    (rotation.z - camera.rotation.z)*rotOn)
+    let vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
+    (rotation.y -camera.rotation.y),
+    (rotation.z - camera.rotation.z))
 
     const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
 
@@ -413,13 +472,14 @@ function arriveEcran(e){
     
     const normalize = vectPosNorm.clone().normalize()
     const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-    camera.translateOnAxis(translation,timeSpend/70)
+    camera.translateOnAxis(translation,timeSpend/100)
 
     time = e
     if(PosNorm>0.05 || RotNorm>0.05){
         requestAnimationFrame(arriveEcran)                
     }
-    if(PosNorm < 0.4){
+    if(ecranAnim && PosNorm < 0.4){
+        ecranAnim = false;
         timeAnim = new THREE.Clock()
         animEcran()
     }  
@@ -439,7 +499,7 @@ document.querySelector('#infos').addEventListener('click',e=>{
         objPos.x = infos.position.x
         objPos.y = infos.position.y
         objPos.z = infos.position.z
-
+        time=undefined
         arriveEcran()
 })
 document.querySelector('#programme').addEventListener('click',e=>{
@@ -448,7 +508,7 @@ document.querySelector('#programme').addEventListener('click',e=>{
     objPos.x = programme.position.x
     objPos.y = programme.position.y
     objPos.z = programme.position.z
-
+    time=undefined
     arriveEcran()
 })
 
@@ -458,7 +518,7 @@ document.querySelector('#interviews').addEventListener('click',e=>{
     objPos.x = interview.position.x
     objPos.y = interview.position.y
     objPos.z = interview.position.z
-
+    time=undefined
     arriveEcran()
 })
 
@@ -467,34 +527,33 @@ document.querySelector('#contact').addEventListener('click',e=>{
     objPos.x = contact.position.x
     objPos.y = contact.position.y
     objPos.z = contact.position.z
-
     rotation.y = -Math.PI/2
 
     
 })
 
-document.querySelector('#accueil').addEventListener('click',e=>{
-    e.stopPropagation()
-rotOn =1
-   accueil()
-})
+document.querySelector('#accueil').addEventListener('click',goToAcc)
 
+function goToAcc(e){
+    e.stopPropagation()
+
+    objPos.x = cameraOrigin.position.x
+    objPos.y = cameraOrigin.position.y
+    objPos.z = cameraOrigin.position.z
+    rotation.x = cameraOrigin.rotation.x
+    rotation.y = cameraOrigin.rotation.y
+    rotation.z = cameraOrigin.rotation.z
+    if(interObj) interObj.material.uniforms.uTime.value = 0;
+    time=undefined
+   arriveEcran()
+}
 document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
     if(e.target.dataset.lock == "true"){
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
-        const cameraBefore = new THREE.Vector3()
-        camera.getWorldDirection(cameraBefore)
-        controls.target = cameraBefore
-        camera.lookAt(cameraBefore)
-
         controls.enabled = true
-        controls.autoRotate = true
-        camera.lookAt(cameraBefore)
-        controls.target = cameraBefore
-
-
+        controls.update()
         e.target.innerText = "Arrêter la balade"
         e.target.dataset.lock = "false"
     }else{  
@@ -503,55 +562,10 @@ document.querySelector('#balade').addEventListener('click',e=>{
         controls.enabled = false
         e.target.innerText="Se balader"
         e.target.dataset.lock = "true"
-        accueil()
-
+        goToAcc(e)
     }
  
 })
-
-
-function accueil(e){
-    let timeSpend
-    if(e !=undefined && time !=undefined){
-        timeSpend = e-time
-    }else{
-        timeSpend = 0
-    }
-    console.log(timeSpend);
-        interObj.material.uniforms.uTime.value = 0
-
-        let vectRotNorm = new THREE.Vector3((cameraOrigin.rotation.x-camera.rotation.x),
-        (cameraOrigin.rotation.y -camera.rotation.y),
-        (cameraOrigin.rotation.z - camera.rotation.z))
-
-        const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
-        const normalizeBis = vectRotNorm.clone().normalize()  
-        const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
-        camera.rotateOnAxis(translationBis,timeSpend/200)
-   
-
-        let vectPosNorm = new THREE.Vector3(cameraOrigin.position.x-camera.position.x,
-            cameraOrigin.position.y -camera.position.y,
-            cameraOrigin.position.z - camera.position.z)
-    
-            const quaternion = new THREE.Quaternion()
-            quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
-            vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
-        const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
-
-
-        const normalize = vectPosNorm.clone().normalize()  
-        const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
-
-            camera.translateOnAxis(translation,timeSpend/100)
-                       
-            if(PosNorm>0.05 || RotNorm>0.05 ){
-                requestAnimationFrame(accueil)
-            }
-
-        time =e
-
-}
 
 //Animation 
 function tick(){
