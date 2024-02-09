@@ -141,8 +141,6 @@ const vitre = new THREE.MeshBasicMaterial({
     transparent:true,
     opacity:0.1
 })
-// const spotLightMap = textureLoader.load('test.jpg')
-// spotLightMap.colorSpace = THREE.SRGBColorSpace
 
 
 const coneGeometry = new THREE.ConeGeometry(0.4,1)
@@ -180,7 +178,6 @@ const cone2Geometry = new THREE.ConeGeometry(0.1,0.5)
 const cone2Material = new THREE.ShaderMaterial({
     vertexShader : retroInVertex,
     fragmentShader : retroInFragment,
-    // transparent:true,
     blending: THREE.AdditiveBlending,
     uniforms : {
         uTime:{value : 0},
@@ -259,9 +256,7 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     vitreRetro.material = vitreGrise
 
     ordis.forEach(ordi=>ordi.material = plastiqueNoir)
-    // const claviers = gltf.scene.children.find(child=>child.name=='claviers')
     touches.material = plastiqueNoirClair
-    // claviers.material = ordiPiedBakedMaterial
     pancarte.material = pancarteMat
     pancarteMur.material = pancarteMurMAt
     sol.material = solBakedMaterial
@@ -270,25 +265,7 @@ gltfLoader.load('deustSalle.glb',gltf=>{
         child.material = allBakedMaterial
     })
     mobilier.forEach(child=>child.material = mobilierBakedMaterial)
-    // const drap = gltf.scene.children.find(child =>child.name === 'toileRetro')
-    // milieuProj.y = drap.geometry.boundingBox.max.y - (drap.geometry.boundingBox.max.y- drap.geometry.boundingBox.min.y)/2 + 0.15;
-    // milieuProj.x = 0
-    // milieuProj.z = drap.geometry.boundingBox.max.z
 
-    // const spotLight = new THREE.SpotLight( 0xffffff,100 );
-    // spotLight.position.set(0.05,2.65,-1.45)
-    // spotLight.angle = Math.PI/8
-    // spotLight.intensity = 50
-    // spotLight.target.position.set(milieuProj.x,milieuProj.y,milieuProj.z)
-    // spotLight.target.updateMatrixWorld();
-    // spotLight.map = spotLightMap
-    
-    // gui.add(spotLight, 'intensity', 1,200)
-    // gui.add(spotLight, 'decay', 0.1,3)
-
-    // const spotLightHelper = new THREE.SpotLightHelper(spotLight)
-
-    // scene.add(spotLight,spotLightHelper)
 })
 
 // Sizes
@@ -316,7 +293,7 @@ const interview = {
     position:{
         x:-0.0304374098777771,
         y:1.4881799221038818,
-        z:-3.3039751052856445
+        z:-4.3039751052856445
 
     }
 }
@@ -325,14 +302,14 @@ const infos = {
     position : {
         x:-0.3777580261230469,
         y:0.8755115270614624,
-        z:0.00133720874786377
+        z:-0.20133720874786377
     }
 }
 const programme = {
     position:{
         x:-2.4275617599487305,
         y:0.8755115270614624,
-        z:-1.778724193572998
+        z:-2.078724193572998
     }
 }
 
@@ -421,8 +398,8 @@ function letsGo(){
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
         if(/écrans[0-9]{2}/.test(interObj.name)){
-            objPos.z += 0.2
-            ecranAnim = true
+            objPos.z += 0.25
+            anim = true
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
@@ -441,8 +418,7 @@ function letsGo(){
 
 let time = undefined
 let timeAnim = 0
-
-let ecranAnim = false
+let anim = false
 
 function arriveEcran(e){
     let timeSpend
@@ -451,42 +427,40 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-    let vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
+    const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
     (rotation.y -camera.rotation.y),
     (rotation.z - camera.rotation.z))
-
-    const RotNorm = Math.sqrt(vectRotNorm.x*vectRotNorm.x+vectRotNorm.y*vectRotNorm.y+vectRotNorm.z*vectRotNorm.z)
-
     const normalizeBis = vectRotNorm.clone().normalize()  
-    const translationBis = RotNorm < Math.sqrt(normalizeBis.x*normalizeBis.x+normalizeBis.y*normalizeBis.y+normalizeBis.z*normalizeBis.z) ? vectRotNorm : normalizeBis;
-    camera.rotateOnAxis(translationBis,timeSpend/200)
-    
+    const translationBis = Math.abs(vectRotNorm.x) < Math.abs(normalizeBis.x) ? vectRotNorm : normalizeBis;
+
+        camera.rotateX(translationBis.x*timeSpend/100)
+        camera.rotateY(translationBis.y*timeSpend/100)
+        camera.rotateZ(translationBis.z*timeSpend/100)
+
     const quaternion = new THREE.Quaternion()
     quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
 
-    let vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
+    const vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
         objPos.y -camera.position.y,
         objPos.z - camera.position.z)
-    vectPosNorm = vectPosNorm.applyQuaternion(quaternion)
-    const PosNorm = Math.sqrt(vectPosNorm.x*vectPosNorm.x+vectPosNorm.y*vectPosNorm.y+vectPosNorm.z*vectPosNorm.z)
+    const vectPos = vectPosNorm.applyQuaternion(quaternion)
     
-    const normalize = vectPosNorm.clone().normalize()
-    const translation = PosNorm < Math.sqrt(normalize.x*normalize.x+normalize.y*normalize.y+normalize.z*normalize.z) ? vectPosNorm : normalize;
+    const normalize = vectPos.clone().normalize()
+    const translation = Math.abs(vectPos.x) < Math.abs(normalize.x) ? vectPos : normalize;
     camera.translateOnAxis(translation,timeSpend/100)
 
     time = e
-    if(PosNorm>0.05 || RotNorm>0.05){
-        requestAnimationFrame(arriveEcran)                
-    }
-    if(ecranAnim && PosNorm < 0.4){
-        ecranAnim = false;
+    if(Math.abs(camera.position.x-objPos.x)>0.0005 || Math.abs(camera.rotation.x-rotation.x)>0.00005) 
+    {requestAnimationFrame(arriveEcran)
+    }else if(anim){
         timeAnim = new THREE.Clock()
         animEcran()
-    }  
+        anim = false
+    }
 }
 function animEcran(){
     const elapsedTimeAnim = timeAnim.getElapsedTime()
-    interObj.material.uniforms.uTime.value = elapsedTimeAnim
+    ecranMat.uniforms.uTime.value = elapsedTimeAnim
     if(1-Math.abs(0.29*0.14)<1.01-elapsedTimeAnim/10){
         requestAnimationFrame(animEcran)
     }
@@ -495,8 +469,12 @@ function animEcran(){
 
 document.querySelector('#infos').addEventListener('click',e=>{
     e.stopPropagation()
-
+    ecranMat.uniforms.uTime.value = 0
+        anim = true
         objPos.x = infos.position.x
+        rotation.x = 0
+        rotation.y = 0
+        rotation.z = 0
         objPos.y = infos.position.y
         objPos.z = infos.position.z
         time=undefined
@@ -504,16 +482,26 @@ document.querySelector('#infos').addEventListener('click',e=>{
 })
 document.querySelector('#programme').addEventListener('click',e=>{
     e.stopPropagation()
+    ecranMat.uniforms.uTime.value = 0
 
+    anim = true
     objPos.x = programme.position.x
     objPos.y = programme.position.y
     objPos.z = programme.position.z
     time=undefined
+    rotation.x = 0
+    rotation.y = 0
+    rotation.z = 0
     arriveEcran()
 })
 
 document.querySelector('#interviews').addEventListener('click',e=>{
     e.stopPropagation()
+    ecranMat.uniforms.uTime.value = 0
+
+    rotation.x = 0
+    rotation.y = 0
+    rotation.z = 0
 
     objPos.x = interview.position.x
     objPos.y = interview.position.y
@@ -528,7 +516,9 @@ document.querySelector('#contact').addEventListener('click',e=>{
     objPos.y = contact.position.y
     objPos.z = contact.position.z
     rotation.y = -Math.PI/2
-
+    rotation.x=0
+    rotation.z=0
+    arriveEcran()
     
 })
 
@@ -543,7 +533,7 @@ function goToAcc(e){
     rotation.x = cameraOrigin.rotation.x
     rotation.y = cameraOrigin.rotation.y
     rotation.z = cameraOrigin.rotation.z
-    if(interObj) interObj.material.uniforms.uTime.value = 0;
+    ecranMat.uniforms.uTime.value = 0
     time=undefined
    arriveEcran()
 }
@@ -553,7 +543,6 @@ document.querySelector('#balade').addEventListener('click',e=>{
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
         controls.enabled = true
-        controls.update()
         e.target.innerText = "Arrêter la balade"
         e.target.dataset.lock = "false"
     }else{  
