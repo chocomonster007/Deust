@@ -76,3 +76,15 @@ a{display: block;
         transform-origin: 100% 0;
         transition: transform 1.5s ease-in-out;
     }
+
+main{
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 80%;
+}
+
+.on{
+    display: flex;
+}

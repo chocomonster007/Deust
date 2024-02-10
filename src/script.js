@@ -11,6 +11,10 @@ import toileFragment from './shader/toileFragment.glsl'
 import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
 
+const infosT = document.querySelector('#infosT')
+const programmeT = document.querySelector('#programmeT')
+const interviewT = document.querySelector('#interviewT')
+
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -346,6 +350,14 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
+function displayTemplate(){
+    t.classList.add('on')
+}
+
+function suppTemplate(){
+    if(document.querySelector('.on'))document.querySelector('.on').classList.remove('on')
+}
+
 function onPointerMove( event ) {
 
 	// calculate pointer position in normalized device coordinates
@@ -354,7 +366,7 @@ function onPointerMove( event ) {
 	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur') document.querySelector('body').style.cursor ='pointer' 
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') document.querySelector('body').style.cursor ='pointer' // || intersects[0]?.object.name =='liègeMur'
     else document.querySelector('body').style.cursor ='default'
 
 }
@@ -383,31 +395,36 @@ const rotation = {
     y:0,
     z:0
 }
+let t
 let interObj
 document.addEventListener('click',letsGo)
 function letsGo(){
-    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro' || intersects[0]?.object.name =='liègeMur' )
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') // || intersects[0]?.object.name =='liègeMur' 
     {   
         rotation.y = 0
         interObj = intersects[0].object
         rotation.x=0
         rotation.y=0
         rotation.z=0
-
         objPos.x = interObj.position.x
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
         if(/écrans[0-9]{2}/.test(interObj.name)){
             objPos.z += 0.25
             anim = true
+            if(/écrans[1-2][0-9]/.test(interObj.name)){
+                t = infosT
+            }else{
+                t= programmeT
+            }
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
+            anim=true
+            t = interviewT
+
         }
-        else if(interObj.name === "liègeMur"){
-            rotation.y = -Math.PI/2
-            objPos.x -=1
-        }
+
         
         time=undefined
         arriveEcran()
@@ -427,15 +444,21 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-    const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
-    (rotation.y -camera.rotation.y),
-    (rotation.z - camera.rotation.z))
-    const normalizeBis = vectRotNorm.clone().normalize()  
-    const translationBis = Math.abs(vectRotNorm.x) < Math.abs(normalizeBis.x) ? vectRotNorm : normalizeBis;
+    
+        const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
+        (rotation.y -camera.rotation.y),
+        (rotation.z - camera.rotation.z))
+        const normalizeBis = vectRotNorm.clone().normalize()  
+        const translationBis = Math.abs(vectRotNorm.x) < Math.abs(normalizeBis.x) ? vectRotNorm : normalizeBis;
 
-        camera.rotateX(translationBis.x*timeSpend/100)
-        camera.rotateY(translationBis.y*timeSpend/100)
-        camera.rotateZ(translationBis.z*timeSpend/100)
+            camera.rotateX(translationBis.x*timeSpend/200)
+            camera.rotateY(translationBis.y*timeSpend/200)
+            camera.rotateZ(translationBis.z*timeSpend/200)
+
+
+
+
+
 
     const quaternion = new THREE.Quaternion()
     quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
@@ -447,12 +470,13 @@ function arriveEcran(e){
     
     const normalize = vectPos.clone().normalize()
     const translation = Math.abs(vectPos.x) < Math.abs(normalize.x) ? vectPos : normalize;
-    camera.translateOnAxis(translation,timeSpend/100)
-
+    camera.translateOnAxis(translation,timeSpend/130)
     time = e
     if(Math.abs(camera.position.x-objPos.x)>0.0005 || Math.abs(camera.rotation.x-rotation.x)>0.00005) 
     {requestAnimationFrame(arriveEcran)
-    }else if(anim){
+    }
+    
+    if(anim && Math.abs(camera.position.z-objPos.z)<0.15){
         timeAnim = new THREE.Clock()
         animEcran()
         anim = false
@@ -463,13 +487,17 @@ function animEcran(){
     ecranMat.uniforms.uTime.value = elapsedTimeAnim
     if(1-Math.abs(0.29*0.14)<1.01-elapsedTimeAnim/10){
         requestAnimationFrame(animEcran)
-    }
+    }else{
+        displayTemplate()
+    }  
 
 }
 
 document.querySelector('#infos').addEventListener('click',e=>{
     e.stopPropagation()
+    suppTemplate()
     ecranMat.uniforms.uTime.value = 0
+    t= infosT
         anim = true
         objPos.x = infos.position.x
         rotation.x = 0
@@ -482,6 +510,8 @@ document.querySelector('#infos').addEventListener('click',e=>{
 })
 document.querySelector('#programme').addEventListener('click',e=>{
     e.stopPropagation()
+    suppTemplate()
+    t= programmeT
     ecranMat.uniforms.uTime.value = 0
 
     anim = true
@@ -497,8 +527,10 @@ document.querySelector('#programme').addEventListener('click',e=>{
 
 document.querySelector('#interviews').addEventListener('click',e=>{
     e.stopPropagation()
-    ecranMat.uniforms.uTime.value = 0
+    suppTemplate()
 
+    ecranMat.uniforms.uTime.value = 0
+    t = interviewT
     rotation.x = 0
     rotation.y = 0
     rotation.z = 0
@@ -526,7 +558,7 @@ document.querySelector('#accueil').addEventListener('click',goToAcc)
 
 function goToAcc(e){
     e.stopPropagation()
-
+    suppTemplate()
     objPos.x = cameraOrigin.position.x
     objPos.y = cameraOrigin.position.y
     objPos.z = cameraOrigin.position.z
