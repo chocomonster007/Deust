@@ -566,9 +566,13 @@ function prepareClick(e){
     suppTemplate()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        header.style.display = "none"
+ 
         header.dataset.open = "false"
-
+        gsap.to('.menu-div',{x:0})
+        gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
+        setTimeout(()=>{
+            header.style.display="none"
+        },500)
         close.style.display = "none"
         menu.style.display = "block"
 
@@ -619,11 +623,16 @@ function goToAcc(e){
     e.stopPropagation()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        header.style.display = "none"
+        
         header.dataset.open = "false"
         close.style.display = "none"
 
         menu.style.display = "block"
+        gsap.to('.menu-div',{x:0})
+        gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
+        setTimeout(()=>{
+            header.style.display="none"
+        },500)
 
     }
     suppTemplate()
@@ -642,9 +651,15 @@ document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        header.style.display = "none"
         close.style.display = "none"
         menu.style.display = "block"
+        gsap.to('.menu-div',{x:0})
+        gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
+        setTimeout(()=>{
+            header.style.display="none"
+        },500)
+        header.dataset.open = "false"
+
 
     }
 
@@ -695,7 +710,7 @@ document.querySelector('.menu-div').addEventListener('click',e=>{
         gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
         setTimeout(()=>{
             header.style.display="none"
-        },1000)
+        },500)
 
     }
     e.target.style.display='none'
