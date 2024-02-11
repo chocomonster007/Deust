@@ -25,7 +25,6 @@ const scene = new THREE.Scene()
 let intersects
 
 const loadingBarElement = document.querySelector('.loading-bar')
-const menu = document.querySelector('header')
 
 
 const loadingManager = new THREE.LoadingManager(
@@ -42,6 +41,8 @@ const loadingManager = new THREE.LoadingManager(
             loadingBarElement.classList.add('ended')
             loadingBarElement.style.transform = ''
             gsap.to("header",{ duration: 1.5, opacity: 1, delay: 0.5 })
+            gsap.to(".menu-div",{ duration: 1.5, opacity: 1, delay: 0.5 })
+
         }, 500)
 
     },
@@ -352,6 +353,9 @@ const pointer = new THREE.Vector2();
 
 function displayTemplate(){
     t.classList.add('on')
+    document.querySelector('#accueil').addEventListener('click',goToAcc)
+    t.addEventListener('click',e=>e.stopPropagation())
+
 }
 
 function suppTemplate(){
@@ -379,6 +383,14 @@ window.addEventListener('resize', () =>
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
 
+    if(sizes.width > 850){
+        document.querySelector('header').style.display = "block"
+    }else if(document.querySelector('header').dataset.open == "true"){
+        document.querySelector('header').style.display = "flex"
+
+    }else{
+        document.querySelector('header').style.display = "none"
+    }
     // Update camera
     camera.aspect = sizes.width / sizes.height
     camera.updateProjectionMatrix()
@@ -390,15 +402,22 @@ window.addEventListener('resize', () =>
 
 const clock = new THREE.Clock()
 const objPos = new THREE.Vector3()
-const rotation = {
-    x:0,
-    y:0,
-    z:0
-}
+const rotation = new THREE.Euler(0,0,0)
 let t
 let interObj
 document.addEventListener('click',letsGo)
-function letsGo(){
+function letsGo(event){
+    document.querySelector('#accueil').removeEventListener('click',goToAcc)
+    window.removeEventListener('pointermove',onPointerMove)
+    document.body.style.cursor = "default"
+    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    raycaster.setFromCamera( pointer, camera );
+
+	// calculate objects intersecting the picking ray
+	intersects = raycaster.intersectObjects( scene.children );
+
     if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') // || intersects[0]?.object.name =='liègeMur' 
     {   
         rotation.y = 0
@@ -409,9 +428,10 @@ function letsGo(){
         objPos.x = interObj.position.x
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
+        anim=true
         if(/écrans[0-9]{2}/.test(interObj.name)){
             objPos.z += 0.25
-            anim = true
+ 
             if(/écrans[1-2][0-9]/.test(interObj.name)){
                 t = infosT
             }else{
@@ -420,11 +440,14 @@ function letsGo(){
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
-            anim=true
+
             t = interviewT
 
         }
 
+
+        
+        
         
         time=undefined
         arriveEcran()
@@ -450,14 +473,10 @@ function arriveEcran(e){
         (rotation.z - camera.rotation.z))
         const normalizeBis = vectRotNorm.clone().normalize()  
         const translationBis = Math.abs(vectRotNorm.x) < Math.abs(normalizeBis.x) ? vectRotNorm : normalizeBis;
-
-            camera.rotateX(translationBis.x*timeSpend/200)
-            camera.rotateY(translationBis.y*timeSpend/200)
-            camera.rotateZ(translationBis.z*timeSpend/200)
-
-
-
-
+            
+        camera.rotateX(translationBis.x*timeSpend/200)
+        camera.rotateY(translationBis.y*timeSpend/200)
+        camera.rotateZ(translationBis.z*timeSpend/200)
 
 
     const quaternion = new THREE.Quaternion()
@@ -492,73 +511,105 @@ function animEcran(){
     }  
 
 }
+document.querySelector('header').addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
-    e.stopPropagation()
-    suppTemplate()
-    ecranMat.uniforms.uTime.value = 0
-    t= infosT
-        anim = true
+
         objPos.x = infos.position.x
         rotation.x = 0
         rotation.y = 0
         rotation.z = 0
         objPos.y = infos.position.y
         objPos.z = infos.position.z
-        time=undefined
-        arriveEcran()
+        t=infosT
+        prepareClick(e)
+
 })
 document.querySelector('#programme').addEventListener('click',e=>{
-    e.stopPropagation()
-    suppTemplate()
-    t= programmeT
-    ecranMat.uniforms.uTime.value = 0
 
+
+    anim = true
+    
     anim = true
     objPos.x = programme.position.x
     objPos.y = programme.position.y
     objPos.z = programme.position.z
-    time=undefined
+
     rotation.x = 0
     rotation.y = 0
     rotation.z = 0
-    arriveEcran()
+    t= programmeT
+    prepareClick(e)
 })
 
-document.querySelector('#interviews').addEventListener('click',e=>{
+function prepareClick(e){
     e.stopPropagation()
+    document.querySelector('#accueil').removeEventListener('click',goToAcc)
+    window.removeEventListener('pointermove',onPointerMove)
+    document.body.style.cursor = "default"
+    ecranMat.uniforms.uTime.value = 0
     suppTemplate()
+    if(parseInt(getComputedStyle(e.target).width)>200){
 
+        document.querySelector('header').style.display = "none"
+        document.querySelector('.close-menu').style.display = "none"
+        document.querySelector('.menu').style.display = "block"
+
+    }
+
+    anim = true
+    time=undefined
+    arriveEcran()
+}
+
+document.querySelector('#interviews').addEventListener('click',e=>{
+
+
+    ecranMat.uniforms.uTime.value = 0
+    t = interviewT
+  
     ecranMat.uniforms.uTime.value = 0
     t = interviewT
     rotation.x = 0
     rotation.y = 0
     rotation.z = 0
+    t=interviewT
 
     objPos.x = interview.position.x
     objPos.y = interview.position.y
     objPos.z = interview.position.z
-    time=undefined
-    arriveEcran()
+
+    prepareClick(e)
 })
 
 document.querySelector('#contact').addEventListener('click',e=>{
-    e.stopPropagation()
+
     objPos.x = contact.position.x
     objPos.y = contact.position.y
     objPos.z = contact.position.z
     rotation.y = -Math.PI/2
     rotation.x=0
     rotation.z=0
-    arriveEcran()
-    
+    t=infosT
+
+    prepareClick(e)
+   
 })
 
 document.querySelector('#accueil').addEventListener('click',goToAcc)
 
 function goToAcc(e){
     e.stopPropagation()
+    if(parseInt(getComputedStyle(e.target).width)>200){
+
+        document.querySelector('header').style.display = "none"
+        document.querySelector('.close-menu').style.display = "none"
+
+        document.querySelector('.menu').style.display = "block"
+
+    }
     suppTemplate()
+    window.addEventListener('pointermove', onPointerMove)
     objPos.x = cameraOrigin.position.x
     objPos.y = cameraOrigin.position.y
     objPos.z = cameraOrigin.position.z
@@ -571,6 +622,14 @@ function goToAcc(e){
 }
 document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
+    if(parseInt(getComputedStyle(e.target).width)>200){
+
+        document.querySelector('header').style.display = "none"
+        document.querySelector('.close-menu').style.display = "none"
+        document.querySelector('.menu').style.display = "block"
+
+    }
+
     if(e.target.dataset.lock == "true"){
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
@@ -587,13 +646,26 @@ document.querySelector('#balade').addEventListener('click',e=>{
     }
  
 })
+document.querySelector('.menu-div').addEventListener('click',e=>{
+    e.stopPropagation()
+    if(e.target.dataset.menu == "open"){
+        document.querySelector('header').style.display="flex"
+        document.querySelector('header').dataset.open = "true"
+        
+        document.querySelector('.close-menu').style.display="block"
+    }else{
+           document.querySelector('header').style.display="none"
+        document.querySelector('header').dataset.open = "false"
+        document.querySelector('.menu').style.display="block"
+    }
+    e.target.style.display='none'
+})
 
 //Animation 
 function tick(){
     const elapsedTime = clock.getElapsedTime()
 
     // controls.update()
-
     renderer.render(scene, camera)
 
     cone2.material.uniforms.uTime.value = elapsedTime
@@ -602,7 +674,6 @@ function tick(){
 
 	// calculate objects intersecting the picking ray
 	intersects = raycaster.intersectObjects( scene.children );
-
 
     window.requestAnimationFrame(tick)
     
