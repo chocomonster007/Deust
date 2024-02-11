@@ -14,6 +14,12 @@ import { gsap } from 'gsap'
 const infosT = document.querySelector('#infosT')
 const programmeT = document.querySelector('#programmeT')
 const interviewT = document.querySelector('#interviewT')
+const header = document.querySelector('header')
+const close = document.querySelector('.close-menu')
+const menu = document.querySelector('.menu')
+const supps = document.querySelectorAll('.select')
+const accueil = document.querySelector('#accueil')
+
 
 
 // Canvas
@@ -40,7 +46,7 @@ const loadingManager = new THREE.LoadingManager(
             // Update loadingBarElement
             loadingBarElement.classList.add('ended')
             loadingBarElement.style.transform = ''
-            gsap.to("header",{ duration: 1.5, opacity: 1, delay: 0.5 })
+            gsap.to(header,{ duration: 1.5, opacity: 1, delay: 0.5 })
             gsap.to(".menu-div",{ duration: 1.5, opacity: 1, delay: 0.5 })
 
         }, 500)
@@ -353,7 +359,7 @@ const pointer = new THREE.Vector2();
 
 function displayTemplate(){
     t.classList.add('on')
-    document.querySelector('#accueil').addEventListener('click',goToAcc)
+    accueil.addEventListener('click',goToAcc)
     t.addEventListener('click',e=>e.stopPropagation())
 
 }
@@ -370,8 +376,8 @@ function onPointerMove( event ) {
 	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') document.querySelector('body').style.cursor ='pointer' // || intersects[0]?.object.name =='liègeMur'
-    else document.querySelector('body').style.cursor ='default'
+    if(/écrans[0-9]{2}/.test(intersects[0]?.object.name) || intersects[0]?.object.name =='toileRetro') document.body.style.cursor ='pointer' // || intersects[0]?.object.name =='liègeMur'
+    else document.body.style.cursor ='default'
 
 }
 
@@ -384,12 +390,15 @@ window.addEventListener('resize', () =>
     sizes.height = window.innerHeight
 
     if(sizes.width > 850){
-        document.querySelector('header').style.display = "block"
-    }else if(document.querySelector('header').dataset.open == "true"){
-        document.querySelector('header').style.display = "flex"
+        header.style.display = "block"
+        document.querySelector('nav').style.width='auto'
+        document.querySelector('nav').style.height='auto'
+
+    }else if(header.dataset.open == "true"){
+        header.style.display = "flex"
 
     }else{
-        document.querySelector('header').style.display = "none"
+        header.style.display = "none"
     }
     // Update camera
     camera.aspect = sizes.width / sizes.height
@@ -407,7 +416,7 @@ let t
 let interObj
 document.addEventListener('click',letsGo)
 function letsGo(event){
-    document.querySelector('#accueil').removeEventListener('click',goToAcc)
+    accueil.removeEventListener('click',goToAcc)
     window.removeEventListener('pointermove',onPointerMove)
     document.body.style.cursor = "default"
     pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -501,7 +510,7 @@ function arriveEcran(e){
         }
     }
     
-    if(anim && Math.abs(camera.position.z-objPos.z)<0.15){
+    if(anim && Math.abs(camera.position.z-objPos.z)<0.05){
         timeAnim = new THREE.Clock()
         animEcran()
         anim = false
@@ -517,7 +526,7 @@ function animEcran(){
     }  
 
 }
-document.querySelector('header').addEventListener('click',e=>e.stopPropagation())
+header.addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
 
@@ -550,18 +559,18 @@ document.querySelector('#programme').addEventListener('click',e=>{
 
 function prepareClick(e){
     e.stopPropagation()
-    document.querySelector('#accueil').removeEventListener('click',goToAcc)
+    accueil.removeEventListener('click',goToAcc)
     window.removeEventListener('pointermove',onPointerMove)
     document.body.style.cursor = "default"
     ecranMat.uniforms.uTime.value = 0
     suppTemplate()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        document.querySelector('header').style.display = "none"
-        document.querySelector('header').dataset.open = "false"
+        header.style.display = "none"
+        header.dataset.open = "false"
 
-        document.querySelector('.close-menu').style.display = "none"
-        document.querySelector('.menu').style.display = "block"
+        close.style.display = "none"
+        menu.style.display = "block"
 
     }
 
@@ -604,17 +613,17 @@ document.querySelector('#contact').addEventListener('click',e=>{
    
 })
 
-document.querySelector('#accueil').addEventListener('click',goToAcc)
+accueil.addEventListener('click',goToAcc)
 
 function goToAcc(e){
     e.stopPropagation()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        document.querySelector('header').style.display = "none"
-        document.querySelector('header').dataset.open = "false"
-        document.querySelector('.close-menu').style.display = "none"
+        header.style.display = "none"
+        header.dataset.open = "false"
+        close.style.display = "none"
 
-        document.querySelector('.menu').style.display = "block"
+        menu.style.display = "block"
 
     }
     suppTemplate()
@@ -633,9 +642,9 @@ document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
-        document.querySelector('header').style.display = "none"
-        document.querySelector('.close-menu').style.display = "none"
-        document.querySelector('.menu').style.display = "block"
+        header.style.display = "none"
+        close.style.display = "none"
+        menu.style.display = "block"
 
     }
 
@@ -652,8 +661,8 @@ document.querySelector('#balade').addEventListener('click',e=>{
         rotation.y = cameraOrigin.rotation.y
         rotation.z = cameraOrigin.rotation.z
         time=undefined
-        const supps = document.querySelectorAll('.select')
         supps.forEach(supp=>supp.style.display="none")
+        document.querySelector('ul :nth-child(6)').style.borderBottom = "none"
         ecranMat.uniforms.uTime.value = 0
         e.target.dataset.lock = "false"
         arriveEcran()
@@ -662,8 +671,8 @@ document.querySelector('#balade').addEventListener('click',e=>{
     }else{  
         document.addEventListener("click",letsGo)
         addEventListener('pointermove',onPointerMove)
+        document.querySelector('ul :nth-child(6)').style.borderBottom = "1px solid rgba(0, 0, 0, 0.247)"
         controls.enabled = false
-        const supps = document.querySelectorAll('.select')
         supps.forEach(supp=>supp.style.display="list-item")
         e.target.innerText="Se balader"
         e.target.dataset.lock = "true"
@@ -674,14 +683,20 @@ document.querySelector('#balade').addEventListener('click',e=>{
 document.querySelector('.menu-div').addEventListener('click',e=>{
     e.stopPropagation()
     if(e.target.dataset.menu == "open"){
-        document.querySelector('header').style.display="flex"
-        document.querySelector('header').dataset.open = "true"
-        
-        document.querySelector('.close-menu').style.display="block"
+        header.style.display="flex"
+        header.dataset.open = "true"
+        close.style.display="block"
+        gsap.to('.menu-div',{x:sizes.width-90})
+        gsap.fromTo('nav',{width:0,height:0},{width:sizes.width,height:sizes.height})
     }else{
-           document.querySelector('header').style.display="none"
-        document.querySelector('header').dataset.open = "false"
-        document.querySelector('.menu').style.display="block"
+        header.dataset.open = "false"
+        menu.style.display="block"
+        gsap.to('.menu-div',{x:0})
+        gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
+        setTimeout(()=>{
+            header.style.display="none"
+        },1000)
+
     }
     e.target.style.display='none'
 })
