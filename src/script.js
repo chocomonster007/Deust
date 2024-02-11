@@ -493,6 +493,12 @@ function arriveEcran(e){
     time = e
     if(Math.abs(camera.position.x-objPos.x)>0.0005 || Math.abs(camera.rotation.x-rotation.x)>0.00005) 
     {requestAnimationFrame(arriveEcran)
+    }else{
+        cancelAnimationFrame(arriveEcran)
+        if(document.querySelector('#balade').dataset.lock=="false"){
+            controls.enabled = true
+            document.querySelector('#balade').innerText = "Arrêter la balade"
+        }
     }
     
     if(anim && Math.abs(camera.position.z-objPos.z)<0.15){
@@ -552,6 +558,8 @@ function prepareClick(e){
     if(parseInt(getComputedStyle(e.target).width)>200){
 
         document.querySelector('header').style.display = "none"
+        document.querySelector('header').dataset.open = "false"
+
         document.querySelector('.close-menu').style.display = "none"
         document.querySelector('.menu').style.display = "block"
 
@@ -603,6 +611,7 @@ function goToAcc(e){
     if(parseInt(getComputedStyle(e.target).width)>200){
 
         document.querySelector('header').style.display = "none"
+        document.querySelector('header').dataset.open = "false"
         document.querySelector('.close-menu').style.display = "none"
 
         document.querySelector('.menu').style.display = "block"
@@ -633,13 +642,29 @@ document.querySelector('#balade').addEventListener('click',e=>{
     if(e.target.dataset.lock == "true"){
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
-        controls.enabled = true
-        e.target.innerText = "Arrêter la balade"
+        if(document.querySelector('.on')){
+            document.querySelector('.on').classList.remove('on')
+        }
+        objPos.x = cameraOrigin.position.x
+        objPos.y = cameraOrigin.position.y
+        objPos.z = cameraOrigin.position.z
+        rotation.x = cameraOrigin.rotation.x
+        rotation.y = cameraOrigin.rotation.y
+        rotation.z = cameraOrigin.rotation.z
+        time=undefined
+        const supps = document.querySelectorAll('.select')
+        supps.forEach(supp=>supp.style.display="none")
+        ecranMat.uniforms.uTime.value = 0
         e.target.dataset.lock = "false"
+        arriveEcran()
+        
+
     }else{  
         document.addEventListener("click",letsGo)
         addEventListener('pointermove',onPointerMove)
         controls.enabled = false
+        const supps = document.querySelectorAll('.select')
+        supps.forEach(supp=>supp.style.display="list-item")
         e.target.innerText="Se balader"
         e.target.dataset.lock = "true"
         goToAcc(e)

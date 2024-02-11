@@ -119,10 +119,14 @@ header{
     height: 100%;
     position: relative;
     background-color: white;
+    border-radius: 0;
 }
 ul{
     flex-direction: column;
     height: 100%;
+}
+li:last-child{
+    border-bottom: none;
 }
 nav{
     padding-top: 15%;
