@@ -92,6 +92,10 @@ main{
     display: flex;
 }
 
+.active{
+    outline: 2px solid white;
+}
+
 @media (max-width:850px){
 .menu-div{
     display: block;

@@ -10,6 +10,8 @@ import retroInVertex from './shader/retroInVertex.glsl'
 import toileFragment from './shader/toileFragment.glsl'
 import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
+import tubeVertex from './shader/tubeVertex.glsl'
+import tubeFragment from './shader/tubeFragment.glsl'
 
 const infosT = document.querySelector('#infosT')
 const programmeT = document.querySelector('#programmeT')
@@ -75,6 +77,18 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 // GLTF loader
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
+
+const cylinderGeometry = new THREE.CylinderGeometry( 0.05, 0.05, 3, 32 ); 
+const cylinderMaterial = new THREE.ShaderMaterial(
+    {uniforms: {
+        uTime:{value:0},
+    },
+    vertexShader : tubeVertex,
+    fragmentShader : tubeFragment} ); 
+const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+cylinder1.position.set(-6,1.5,-20)
+cylinder1.rotation.x = Math.PI/2
+scene.add(cylinder1)
 
 const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1)
 const overlayMaterial = new THREE.ShaderMaterial({
@@ -443,7 +457,15 @@ function letsGo(event){
  
             if(/écrans[1-2][0-9]/.test(interObj.name)){
                 t = infosT
+                document.querySelectorAll('button').forEach(button=>{
+                    button.classList.remove('active')
+                    document.querySelector('#infos').classList.add('active')
+                })
             }else{
+                document.querySelectorAll('button').forEach(button=>{
+                button.classList.remove('active')
+                document.querySelector('#infos').classList.add('programme')
+                })
                 t= programmeT
             }
         }
@@ -727,6 +749,7 @@ function tick(){
 
     raycaster.setFromCamera( pointer, camera );
 
+    cylinder1.material.uniforms.uTime.value = elapsedTime
 	// calculate objects intersecting the picking ray
 	intersects = raycaster.intersectObjects( scene.children );
 
