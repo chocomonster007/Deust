@@ -78,7 +78,7 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
 
-const cylinderGeometry = new THREE.CylinderGeometry( 0.05, 0.05, 3, 32 ); 
+const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 3, 32 ); 
 const cylinderMaterial = new THREE.ShaderMaterial(
     {uniforms: {
         uTime:{value:0},
@@ -428,6 +428,8 @@ const objPos = new THREE.Vector3()
 const rotation = new THREE.Euler(0,0,0)
 let t
 let interObj
+
+
 document.addEventListener('click',letsGo)
 function letsGo(event){
     accueil.removeEventListener('click',goToAcc)
@@ -457,20 +459,17 @@ function letsGo(event){
  
             if(/écrans[1-2][0-9]/.test(interObj.name)){
                 t = infosT
-                document.querySelectorAll('button').forEach(button=>{
-                    button.classList.remove('active')
-                    document.querySelector('#infos').classList.add('active')
-                })
+                activeMenu('#infos')
             }else{
-                document.querySelectorAll('button').forEach(button=>{
-                button.classList.remove('active')
-                document.querySelector('#infos').classList.add('programme')
-                })
+                activeMenu('#programme')
+
+
                 t= programmeT
             }
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
+            activeMenu('#interviews')
 
             t = interviewT
 
@@ -485,6 +484,13 @@ function letsGo(event){
 
     }
 
+}
+
+function activeMenu(element){
+    document.querySelectorAll('button').forEach(button=>{
+        button.classList.remove('active')
+        document.querySelector(element).classList.add('active')
+        })
 }
 
 let time = undefined
@@ -551,6 +557,8 @@ function animEcran(){
 header.addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
+        activeMenu('#infos')
+
 
         objPos.x = infos.position.x
         rotation.x = 0
@@ -564,7 +572,7 @@ document.querySelector('#infos').addEventListener('click',e=>{
 })
 document.querySelector('#programme').addEventListener('click',e=>{
 
-
+    activeMenu('#programme')
     anim = true
     
     anim = true
@@ -606,7 +614,7 @@ function prepareClick(e){
 }
 
 document.querySelector('#interviews').addEventListener('click',e=>{
-
+    activeMenu('#interviews')
 
     ecranMat.uniforms.uTime.value = 0
     t = interviewT
@@ -626,6 +634,7 @@ document.querySelector('#interviews').addEventListener('click',e=>{
 })
 
 document.querySelector('#contact').addEventListener('click',e=>{
+    activeMenu('#interviews')
 
     objPos.x = contact.position.x
     objPos.y = contact.position.y
@@ -658,6 +667,8 @@ function goToAcc(e){
 
     }
     suppTemplate()
+    activeMenu('#accueil')
+
     window.addEventListener('pointermove', onPointerMove)
     objPos.x = cameraOrigin.position.x
     objPos.y = cameraOrigin.position.y
@@ -671,6 +682,8 @@ function goToAcc(e){
 }
 document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
+    activeMenu('#balade')
+
     if(parseInt(getComputedStyle(e.target).width)>200){
 
         close.style.display = "none"
