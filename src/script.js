@@ -12,6 +12,8 @@ import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
 import tubeVertex from './shader/tubeVertex.glsl'
 import tubeFragment from './shader/tubeFragment.glsl'
+import tubeFragment2 from './shader/tubeFragment2.glsl'
+import tubeVertex2 from './shader/tubeVertex2.glsl'
 
 const infosT = document.querySelector('#infosT')
 const programmeT = document.querySelector('#programmeT')
@@ -87,11 +89,12 @@ const cylinderMaterial = new THREE.ShaderMaterial(
     fragmentShader : tubeFragment} ); 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
  
-cylinder1.position.set(-6,1.5,-20)
+cylinder1.position.set(0,1.5,0)
 cylinder1.rotation.x = Math.PI/2
 scene.add(cylinder1)
 
-const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1)
+
+const overlayGeometry = new THREE.PlaneGeometry(4, 4, 1, 1)
 const overlayMaterial = new THREE.ShaderMaterial({
     // wireframe: true,
     transparent: true,
