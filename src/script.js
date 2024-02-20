@@ -78,7 +78,7 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
 
-const cylinderGeometry = new THREE.CylinderGeometry( 0.05, 0.05, 3, 32 ); 
+const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 3, 32 ); 
 const cylinderMaterial = new THREE.ShaderMaterial(
     {uniforms: {
         uTime:{value:0},
@@ -86,6 +86,7 @@ const cylinderMaterial = new THREE.ShaderMaterial(
     vertexShader : tubeVertex,
     fragmentShader : tubeFragment} ); 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+ 
 cylinder1.position.set(-6,1.5,-20)
 cylinder1.rotation.x = Math.PI/2
 scene.add(cylinder1)
@@ -129,7 +130,7 @@ const plafondBakedTexture = textureLoader.load('plafond.jpg')
 plafondBakedTexture.flipY = false
 plafondBakedTexture.colorSpace = THREE.SRGBColorSpace
 
-const allBakedTexture = textureLoader.load('mur2.jpg')
+const allBakedTexture = textureLoader.load('murF.jpg')
 allBakedTexture.flipY = false
 allBakedTexture.colorSpace = THREE.SRGBColorSpace
 
@@ -340,12 +341,9 @@ const programme = {
 
 const contact = {
     position:{
-        x:2.8654136657714844,
+        x:2.9654136657714844,
         y:1.4804919958114624,
         z:-5.4577956199646
-    },
-    rotation:{
-        y:-Math.PI/2
     }
 }
 
@@ -428,6 +426,8 @@ const objPos = new THREE.Vector3()
 const rotation = new THREE.Euler(0,0,0)
 let t
 let interObj
+
+
 document.addEventListener('click',letsGo)
 function letsGo(event){
     accueil.removeEventListener('click',goToAcc)
@@ -457,20 +457,17 @@ function letsGo(event){
  
             if(/écrans[1-2][0-9]/.test(interObj.name)){
                 t = infosT
-                document.querySelectorAll('button').forEach(button=>{
-                    button.classList.remove('active')
-                    document.querySelector('#infos').classList.add('active')
-                })
+                activeMenu('#infos')
             }else{
-                document.querySelectorAll('button').forEach(button=>{
-                button.classList.remove('active')
-                document.querySelector('#infos').classList.add('programme')
-                })
+                activeMenu('#programme')
+
+
                 t= programmeT
             }
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
+            activeMenu('#interviews')
 
             t = interviewT
 
@@ -487,6 +484,13 @@ function letsGo(event){
 
 }
 
+function activeMenu(element){
+    document.querySelectorAll('button').forEach(button=>{
+        button.classList.remove('active')
+        document.querySelector(element).classList.add('active')
+        })
+}
+
 let time = undefined
 let timeAnim = 0
 let anim = false
@@ -498,7 +502,9 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-    
+
+        
+
         const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
         (rotation.y -camera.rotation.y),
         (rotation.z - camera.rotation.z))
@@ -538,6 +544,8 @@ function arriveEcran(e){
         anim = false
     }
 }
+
+
 function animEcran(){
     const elapsedTimeAnim = timeAnim.getElapsedTime()
     ecranMat.uniforms.uTime.value = elapsedTimeAnim
@@ -548,9 +556,13 @@ function animEcran(){
     }  
 
 }
+
+
 header.addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
+        activeMenu('#infos')
+
 
         objPos.x = infos.position.x
         rotation.x = 0
@@ -564,7 +576,7 @@ document.querySelector('#infos').addEventListener('click',e=>{
 })
 document.querySelector('#programme').addEventListener('click',e=>{
 
-
+    activeMenu('#programme')
     anim = true
     
     anim = true
@@ -606,7 +618,7 @@ function prepareClick(e){
 }
 
 document.querySelector('#interviews').addEventListener('click',e=>{
-
+    activeMenu('#interviews')
 
     ecranMat.uniforms.uTime.value = 0
     t = interviewT
@@ -626,11 +638,12 @@ document.querySelector('#interviews').addEventListener('click',e=>{
 })
 
 document.querySelector('#contact').addEventListener('click',e=>{
+    activeMenu('#contact')
 
     objPos.x = contact.position.x
     objPos.y = contact.position.y
     objPos.z = contact.position.z
-    rotation.y = -Math.PI/2
+    rotation.y = -Math.PI/2.02
     rotation.x=0
     rotation.z=0
     t=infosT
@@ -658,6 +671,8 @@ function goToAcc(e){
 
     }
     suppTemplate()
+    activeMenu('#accueil')
+
     window.addEventListener('pointermove', onPointerMove)
     objPos.x = cameraOrigin.position.x
     objPos.y = cameraOrigin.position.y
@@ -671,6 +686,8 @@ function goToAcc(e){
 }
 document.querySelector('#balade').addEventListener('click',e=>{
     e.stopPropagation()
+    activeMenu('#balade')
+
     if(parseInt(getComputedStyle(e.target).width)>200){
 
         close.style.display = "none"
