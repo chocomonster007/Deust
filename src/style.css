@@ -16,7 +16,7 @@ body{
     padding: 0;
     font-family: sans-serif;
     height: 100dvh;
-    width: 100%;
+    width: 100dvw;
     position: relative;
     z-index: -2;
     overflow: hidden;

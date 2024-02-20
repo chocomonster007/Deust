@@ -86,6 +86,7 @@ const cylinderMaterial = new THREE.ShaderMaterial(
     vertexShader : tubeVertex,
     fragmentShader : tubeFragment} ); 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+ 
 cylinder1.position.set(-6,1.5,-20)
 cylinder1.rotation.x = Math.PI/2
 scene.add(cylinder1)
@@ -129,7 +130,7 @@ const plafondBakedTexture = textureLoader.load('plafond.jpg')
 plafondBakedTexture.flipY = false
 plafondBakedTexture.colorSpace = THREE.SRGBColorSpace
 
-const allBakedTexture = textureLoader.load('mur2.jpg')
+const allBakedTexture = textureLoader.load('murF.jpg')
 allBakedTexture.flipY = false
 allBakedTexture.colorSpace = THREE.SRGBColorSpace
 
@@ -340,12 +341,9 @@ const programme = {
 
 const contact = {
     position:{
-        x:2.8654136657714844,
+        x:2.9654136657714844,
         y:1.4804919958114624,
         z:-5.4577956199646
-    },
-    rotation:{
-        y:-Math.PI/2
     }
 }
 
@@ -504,7 +502,9 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-    
+
+        
+
         const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
         (rotation.y -camera.rotation.y),
         (rotation.z - camera.rotation.z))
@@ -544,6 +544,8 @@ function arriveEcran(e){
         anim = false
     }
 }
+
+
 function animEcran(){
     const elapsedTimeAnim = timeAnim.getElapsedTime()
     ecranMat.uniforms.uTime.value = elapsedTimeAnim
@@ -554,6 +556,8 @@ function animEcran(){
     }  
 
 }
+
+
 header.addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
@@ -634,12 +638,12 @@ document.querySelector('#interviews').addEventListener('click',e=>{
 })
 
 document.querySelector('#contact').addEventListener('click',e=>{
-    activeMenu('#interviews')
+    activeMenu('#contact')
 
     objPos.x = contact.position.x
     objPos.y = contact.position.y
     objPos.z = contact.position.z
-    rotation.y = -Math.PI/2
+    rotation.y = -Math.PI/2.02
     rotation.x=0
     rotation.z=0
     t=infosT
