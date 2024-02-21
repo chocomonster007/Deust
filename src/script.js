@@ -55,6 +55,12 @@ const loadingManager = new THREE.LoadingManager(
 
         }, 500)
 
+
+        setTimeout(()=>{
+            const obj = scene.getObjectByName('overlay')
+            scene.remove(obj)
+        },2500)
+
     },
 
     // Progress
@@ -80,14 +86,18 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
 
-const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 3, 32 ); 
+const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 2,32); 
 const cylinderMaterial = new THREE.ShaderMaterial(
     {uniforms: {
         uTime:{value:0},
     },
     vertexShader : tubeVertex,
-    fragmentShader : tubeFragment} ); 
+    fragmentShader : tubeFragment,
+} );
+
+
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
+
  
 cylinder1.position.set(0,1.5,0)
 cylinder1.rotation.x = Math.PI/2
@@ -118,6 +128,7 @@ const overlayMaterial = new THREE.ShaderMaterial({
     `
 })
 const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
+overlay.name = "overlay"
 scene.add(overlay)
 
 
@@ -387,7 +398,6 @@ function onPointerMove( event ) {
 
 	// calculate pointer position in normalized device coordinates
 	// (-1 to +1) for both components
-
 	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
@@ -536,9 +546,24 @@ function arriveEcran(e){
     }else{
         cancelAnimationFrame(arriveEcran)
         if(document.querySelector('#balade').dataset.lock=="false"){
+            const vecCam = new THREE.Vector3()
+            const vecC = new THREE.Vector3()
+            camera.getWorldDirection(vecCam)
+            camera.getWorldPosition(vecC)
+            
+            const result = new THREE.Vector3(
+                vecC.x+vecCam.x*8,vecC.y+vecCam.y*8,vecC.z+vecCam.z*8
+            )
+            console.log(vecCam);
             controls.enabled = true
+            controls.target = result
+            controls.update()
+
+
             document.querySelector('#balade').innerText = "Arrêter la balade"
         }
+        document.querySelector('#balade').addEventListener('click',baladeOn)
+
     }
     
     if(anim && Math.abs(camera.position.z-objPos.z)<0.05){
@@ -687,9 +712,12 @@ function goToAcc(e){
     time=undefined
    arriveEcran()
 }
-document.querySelector('#balade').addEventListener('click',e=>{
+document.querySelector('#balade').addEventListener('click',baladeOn)
+
+function baladeOn(e){
     e.stopPropagation()
     activeMenu('#balade')
+    document.querySelector('#balade').removeEventListener('click',baladeOn)
 
     if(parseInt(getComputedStyle(e.target).width)>200){
 
@@ -736,7 +764,7 @@ document.querySelector('#balade').addEventListener('click',e=>{
         goToAcc(e)
     }
  
-})
+}
 document.querySelector('.menu-div').addEventListener('click',e=>{
     e.stopPropagation()
     if(e.target.dataset.menu == "open"){
