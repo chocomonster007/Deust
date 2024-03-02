@@ -8,7 +8,7 @@
 }
 
 :root{
-    outline: 1px solid red;
+    --height-var:0;
 }
 
 body{
@@ -19,14 +19,14 @@ body{
     width: 100dvw;
     position: relative;
     z-index: -2;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 header{
     opacity:0;
     padding: 6px;
     background-color: rgba(62, 62, 62, 0.486);
     border-radius:10px;
-    position: absolute;
+    position: fixed;
     left: 50%;
     bottom: 20px;
     transform: translateX(-50%);
@@ -88,8 +88,7 @@ main{
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    height: 80%;
+    height: 90%;
     z-index: 10;
 }
 .menu-div{display: none;}
@@ -97,8 +96,57 @@ main{
     display: flex;
 }
 
+
+
 .active{
     outline: 2px solid white;
+}
+.programme p{
+    margin: 0;
+    padding: 20px 10px;
+    border: 1px solid #4c2da6;
+    box-shadow: 4px 2px #4c2da6;
+
+}
+
+.programme .divDej{
+    transform: rotateZ(90deg);
+    box-shadow: none;
+    background-color: white;
+    border: 1px solid #4c2da6;
+    box-shadow: 2px -4px #4c2da6;
+    position: relative;
+    z-index: -1;
+    height: 60%;
+
+}
+
+.divDej .dejeuner{
+    border: none;
+    box-shadow: none;
+}
+
+.programme{
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-around;
+    width:80%;
+    font-size: 2rem;    
+}
+.all{
+    display: flex;
+    justify-content: space-between;
+    height: 50%;
+    align-items: center;
+}
+
+.machin{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 50%;
+    height: 100%;
 }
 
 button:not(.active)::after{
@@ -122,6 +170,10 @@ button:not(.active):hover::after{
 
 }
 
+main h1{
+    margin-top: 50px;
+}
+
 button:not(.active){
     outline: none;
     transition-delay:0.3s;
@@ -132,11 +184,43 @@ button:not(.active):hover{
     outline: 2px solid #ffffff;
 }
 
+.block{
+    display: flex;
+    align-items: center;
+    margin: 10px;
+    font-size: 1.2rem;
+}
+.block a{
+    color: #4c2da6;
+}
+.block img{
+    margin-right: 20px;
+}
+.block p{
+    margin: 0;
+}
+.infos{
+    width: 80%;
+}
+
+#interviewT{
+    animation: animInterview 0.3s ease-out;
+    background-color: white;
+    min-height: 100vh;
+    padding-bottom: 10vh;
+    height: auto;
+}
+
+#interviewT iframe{
+    width: 80%;
+    height: 80vh;
+}
+
 @media (max-width:850px){
 .menu-div{
     display: block;
-    width: 50px;
-    position: absolute;
+    width: 35px;
+    position: fixed;
     margin: 20px;
     background-color: white;
     border-radius: 5px;
@@ -146,9 +230,33 @@ button:not(.active):hover{
 .menu-div:hover{
     cursor: pointer;
 }
+
+main h1{
+    margin-top: 0px;
+}
 .menu{
     display: block;
-    width: 50px;
+    width: 35px;
+}
+.programme{
+    font-size: 1.2rem;
+}
+.machin{
+    width: 70%;
+}
+
+main{
+    padding-top: 10vh;
+}
+
+main h1{
+    font-size: 1.3rem;
+}
+iframe{
+    max-width: 80%;
+}
+.programme .divDej{
+    height: auto;
 }
 header{
     display: none;
@@ -190,7 +298,7 @@ li{width: 100%;
 
 .close-menu{
     display: none;
-    width: 50px;
+    width: 35px;
 }
 
 .active{
@@ -200,4 +308,12 @@ li{width: 100%;
 }
 
 
+}
+
+@keyframes animInterview{
+    from{
+        transform: translateX(100%);
+    }to{
+        transform: translateX(0%);
+    }
 }

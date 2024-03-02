@@ -32,36 +32,64 @@
     </header>
     <canvas class="webgl"></canvas>
     <div class="loading-bar"></div>
+
+
+    <main id="interviewT">
+      <h1>Interviews</h1>
+      <h2>Simon Capillon</h2>
+      <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/1LVJXBzFuww?si=yveENIDtBY_q3Mjt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <h2>David Lannuzel</h2>
+      <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/yHjWhtuHhjI?si=6B1KzLFIPbJbW5bA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <h2>Byl</h2>
+      <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/zUxAMhGuV1c?si=ftaXfR_-1rQDZN5J" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </main>
+
+    
       <main id="infosT">
         <h1>Infos</h1>
-        <h2>17 mai 2024</h2>
-        <h2>A partir de 8h00</h2>
-        <h2><a href="mailto:rencontredeusttmic@gmail.com">rencontredeusttmic@gmail.com</a></h2>
-        <h2><a href="https://www.linkedin.com/in/rencontre-des-anciens-du-deust-t-mic-578b69271/">Recontre des anciens du DEUST T-MIC</a></h2>
+        <div class="infos">
+          <div class="block">
+            <img src="calendrier.svg" alt="" width="40px" height="40px">
+            <p>17 Mai 2024</p>
+          </div>
+          <div class="block">
+            <img src="clock.svg" alt="" width="40px" height="40px">
+            <p>A partir de 8h00</p>
+          </div>
+          <div class="block">
+            <img src="mail.svg" alt="" width="40px" height="40px">
+            <a href="mailto:rencontredeusttmic@gmail.com">rencontredeusttmic@gmail.com</a>
+          </div>
+          <div class="block">
+            <img src="linkedin.svg" alt="" width="40px" height="40px">
+            <a href="https://www.linkedin.com/in/rencontre-des-anciens-du-deust-t-mic-578b69271/">Recontre des anciens du DEUST T-MIC</a>
+          </div>
 
-        <iframe src="https://www.google.com/maps/d/u/0/embed?mid=1nTiFJhauNRnFpbhuwrvSfHX9_ITgTi4&ehbc=2E312F&noprof=1" width="640" height="480"></iframe>
 
+        <div class="block">
+          <img src="map.svg" alt="" width="40px" height="40px">
+          <p>6 Avenue Victor le Gorgeu</p>
+        </div>
+      </div>
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2227.4883534545556!2d-4.494663631345521!3d48.399999387057896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4816bbfa2f641715%3A0x49d512a1925a91d8!2sFacult%C3%A9%20de%20Sciences%20et%20Techniques%20-%20Universit%C3%A9%20de%20Bretagne-Occidentale!5e0!3m2!1sfr!2sfr!4v1709246342088!5m2!1sfr!2sfr" width="800" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </main>
 
       <main id="programmeT">
         <h1>Programme de l'évènement</h1>
-        <div><h2>8h30 - 9h30 :</h2><p>Accueil des invités</p></div>
-        <div><h2>9h45 - 11h30 :</h2><p>Table ronde</p></div>
-        <div><h2>12h30 :</h2><p>Pause déjeuner</p></div>
-        <div><h2>14h00 - 16h00 :</h2><p>Jeux</p></div>
-        <div><h2>16h30 :</h2><p>Clôture et discours de fin</p></div>
+        <div class="programme">
+          <p><b>8h30 - 9h30 :</b> Accueil des invités</p>
+          <div class="all">
+            <div class="machin">
+              <p><b>9h45 - 11h30 :</b> Table ronde</p>
+              <p><b>14h00 - 16h00 :</b> Jeux</p>
+            </div>
+            <div class="divDej"><p class="dejeuner"><b>12h30 :</b> Pause déjeuner</p></div>
+            
+          </div>
+          <p><b>16h30 :</b> Clôture et discours de fin</p>
+        </div>
       </main>
  
-      <main id="interviewT">
-        <h1>Interviews</h1>
-        <div><h2>8h30 - 9h30 :</h2><p>Accueil des invités</p>
-        <iframe src="" frameborder="0"></iframe></div>
-        <div><h2>8h30 - 9h30 :</h2><p>Accueil des invités</p>
-          <iframe src="" frameborder="0"></iframe></div>
-          <div><h2>8h30 - 9h30 :</h2><p>Accueil des invités</p>
-            <iframe src="" frameborder="0"></iframe></div>
-      </main>
-
     <script type="module" src="./script.js"></script>
   </body>
 </html>
