@@ -23,6 +23,7 @@ const close = document.querySelector('.close-menu')
 const menu = document.querySelector('.menu')
 const supps = document.querySelectorAll('.select')
 const accueil = document.querySelector('#accueil')
+const iframeInterview = document.querySelectorAll('#interviewT iframe')
 
 
 
@@ -95,6 +96,7 @@ const cylinderMaterial = new THREE.ShaderMaterial(
     fragmentShader : tubeFragment,
 } );
 
+const miniature = textureLoader.load('miniature.jpg')
 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
 
@@ -106,7 +108,6 @@ scene.add(cylinder1)
 
 const overlayGeometry = new THREE.PlaneGeometry(4, 4, 1, 1)
 const overlayMaterial = new THREE.ShaderMaterial({
-    // wireframe: true,
     transparent: true,
     uniforms:
     {
@@ -208,9 +209,8 @@ const toileMat = new THREE.ShaderMaterial({
     vertexShader : toileVertex,
     fragmentShader : toileFragment,
     uniforms:{
-        uTime:{
-            value:0
-        }
+        uTexture:{value:miniature},
+        uTime:{value:0}
     }
 })
 
@@ -260,6 +260,14 @@ const textMat = new THREE.MeshBasicMaterial({
     color:0xffffff
 })
 
+const planeGeo = new THREE.PlaneGeometry(3.3,1.86,8,8)
+
+const planeM = new THREE.Mesh(planeGeo, toileMat)
+planeM.position.set(-0.03,1.55,-5.8)
+planeM.name="toileRetro"
+
+scene.add(planeM)
+
 scene.add( cone,cone2 );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
@@ -279,9 +287,7 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
     const texte = gltf.scene.children.find(child=>child.name=="Texte")
     const ecrans = gltf.scene.children.filter(child=>/écrans[0-9]{2}/.test(child.name))
-    const toileRetro = gltf.scene.children.find(child=>child.name=="toileRetro")
 
-    toileRetro.material = toileMat
 
     ecrans.forEach(ecran=>ecran.material = ecranMat)
     texte.material = textMat
@@ -391,7 +397,23 @@ function displayTemplate(){
 }
 
 function suppTemplate(){
-    if(document.querySelector('.on'))document.querySelector('.on').classList.remove('on')
+    if(document.querySelector('.on')){
+        if(document.querySelector('#interviewT').classList.contains('on')){
+            document.querySelector('#interviewT').animate([
+                {transform:"translateX(0px)"},
+                {transform:"translateX(100%)"},
+            ],{
+                duration: 300
+            })
+            setTimeout(()=>{
+                document.querySelector('.on').classList.remove('on')
+            },300)
+        }else{
+            document.querySelector('.on').classList.remove('on')
+
+        }
+    }
+
 }
 
 function onPointerMove( event ) {
@@ -464,35 +486,27 @@ function letsGo(event){
         objPos.x = interObj.position.x
         objPos.y = interObj.position.y
         objPos.z = interObj.position.z
-        anim=true
+       
         if(/écrans[0-9]{2}/.test(interObj.name)){
             objPos.z += 0.25
- 
+            anim="ecran"
             if(/écrans[1-2][0-9]/.test(interObj.name)){
                 t = infosT
                 activeMenu('#infos')
             }else{
                 activeMenu('#programme')
-
-
                 t= programmeT
             }
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
             activeMenu('#interviews')
-
             t = interviewT
-
+            anim="toile"
         }
-
-
-        
-        
-        
+               
         time=undefined
         arriveEcran()
-
     }
 
 }
@@ -515,9 +529,6 @@ function arriveEcran(e){
     }else{
         timeSpend = 0
     }
-
-        
-
         const vectRotNorm = new THREE.Vector3((rotation.x-camera.rotation.x),
         (rotation.y -camera.rotation.y),
         (rotation.z - camera.rotation.z))
@@ -554,7 +565,6 @@ function arriveEcran(e){
             const result = new THREE.Vector3(
                 vecC.x+vecCam.x*8,vecC.y+vecCam.y*8,vecC.z+vecCam.z*8
             )
-            console.log(vecCam);
             controls.enabled = true
             controls.target = result
             controls.update()
@@ -568,7 +578,8 @@ function arriveEcran(e){
     
     if(anim && Math.abs(camera.position.z-objPos.z)<0.05){
         timeAnim = new THREE.Clock()
-        animEcran()
+        if(anim==="ecran") animEcran()
+        else displayTemplate()
         anim = false
     }
 }
@@ -590,8 +601,6 @@ header.addEventListener('click',e=>e.stopPropagation())
 
 document.querySelector('#infos').addEventListener('click',e=>{
         activeMenu('#infos')
-
-
         objPos.x = infos.position.x
         rotation.x = 0
         rotation.y = 0
@@ -600,6 +609,8 @@ document.querySelector('#infos').addEventListener('click',e=>{
         objPos.z = infos.position.z
         t=infosT
         prepareClick(e)
+        anim = "ecran"
+
 
 })
 document.querySelector('#programme').addEventListener('click',e=>{
@@ -617,6 +628,8 @@ document.querySelector('#programme').addEventListener('click',e=>{
     rotation.z = 0
     t= programmeT
     prepareClick(e)
+    anim = "ecran"
+
 })
 
 function prepareClick(e){
@@ -640,7 +653,6 @@ function prepareClick(e){
 
     }
 
-    anim = true
     time=undefined
     arriveEcran()
 }
@@ -661,7 +673,7 @@ document.querySelector('#interviews').addEventListener('click',e=>{
     objPos.x = interview.position.x
     objPos.y = interview.position.y
     objPos.z = interview.position.z
-
+    anim="toile"
     prepareClick(e)
 })
 
@@ -689,7 +701,7 @@ function goToAcc(e){
         
         header.dataset.open = "false"
         close.style.display = "none"
-
+        
         menu.style.display = "block"
         gsap.to('.menu-div',{x:0})
         gsap.fromTo('nav',{width:sizes.width,height:sizes.height},{width:0,height:0})
@@ -701,6 +713,7 @@ function goToAcc(e){
     suppTemplate()
     activeMenu('#accueil')
 
+
     window.addEventListener('pointermove', onPointerMove)
     objPos.x = cameraOrigin.position.x
     objPos.y = cameraOrigin.position.y
@@ -709,6 +722,7 @@ function goToAcc(e){
     rotation.y = cameraOrigin.rotation.y
     rotation.z = cameraOrigin.rotation.z
     ecranMat.uniforms.uTime.value = 0
+    toileMat.uniforms.uTime.value =0
     time=undefined
    arriveEcran()
 }
