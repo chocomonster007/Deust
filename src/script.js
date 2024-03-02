@@ -268,7 +268,7 @@ planeM.name="toileRetro"
 
 scene.add(planeM)
 
-scene.add( cone,cone2 );
+scene.add( cone );
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
@@ -750,9 +750,7 @@ function baladeOn(e){
     if(e.target.dataset.lock == "true"){
         document.removeEventListener("click",letsGo)
         removeEventListener('pointermove',onPointerMove)
-        if(document.querySelector('.on')){
-            document.querySelector('.on').classList.remove('on')
-        }
+        suppTemplate()
         objPos.x = cameraOrigin.position.x
         objPos.y = cameraOrigin.position.y
         objPos.z = cameraOrigin.position.z

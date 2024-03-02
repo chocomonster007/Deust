@@ -32,6 +32,7 @@ header{
     transform: translateX(-50%);
     width: fit-content;
     display: block;
+    z-index: 50;
 }
 ul{
     margin: 0;
@@ -224,11 +225,15 @@ button:not(.active):hover{
     margin: 20px;
     background-color: white;
     border-radius: 5px;
-    z-index: 11;
+    z-index: 70;
     opacity: 0;
 }
 .menu-div:hover{
     cursor: pointer;
+}
+#interviewT iframe{
+    width: 90%;
+    height: 40vh;
 }
 
 main h1{
@@ -267,6 +272,7 @@ header{
     position: absolute;
     background-color: transparent;
     border-radius: 0;
+    z-index: 50;
 }
 ul{
     padding-top: 10dvh;
