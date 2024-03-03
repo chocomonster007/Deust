@@ -82,8 +82,12 @@ a{display: block;
     {
         transform: scaleX(0);
         transform-origin: 100% 0;
-        transition: transform 1s ease-in-out;
+        transition: transform 0.8s ease-in-out;
     }
+
+.interviews{
+    width: 80%;
+}
 
 main{
     display: none;
@@ -212,8 +216,12 @@ button:not(.active):hover{
     height: auto;
 }
 
+#interviewT h2{
+    margin-top: 50px;
+}
+
 #interviewT iframe{
-    width: 80%;
+    width: 100%;
     height: 80vh;
 }
 
@@ -232,8 +240,12 @@ button:not(.active):hover{
     cursor: pointer;
 }
 #interviewT iframe{
-    width: 90%;
     height: 40vh;
+    width: 100%;
+}
+.interviews{
+    width:90%;
+    margin:auto
 }
 
 main h1{
@@ -257,7 +269,7 @@ main{
 main h1{
     font-size: 1.3rem;
 }
-iframe{
+#infoT iframe{
     max-width: 80%;
 }
 .programme .divDej{

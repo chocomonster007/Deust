@@ -23,9 +23,6 @@ const close = document.querySelector('.close-menu')
 const menu = document.querySelector('.menu')
 const supps = document.querySelectorAll('.select')
 const accueil = document.querySelector('#accueil')
-const iframeInterview = document.querySelectorAll('#interviewT iframe')
-
-
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -37,7 +34,6 @@ let intersects
 
 const loadingBarElement = document.querySelector('.loading-bar')
 
-
 const loadingManager = new THREE.LoadingManager(
     // Loaded
     () =>
@@ -46,13 +42,13 @@ const loadingManager = new THREE.LoadingManager(
         window.setTimeout(() =>
         {
             // Animate overlay
-            gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 1.5, value: 0, delay: 0.5 })
+            gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 1, value: 0, delay: 0.5 })
 
             // Update loadingBarElement
             loadingBarElement.classList.add('ended')
             loadingBarElement.style.transform = ''
-            gsap.to(header,{ duration: 1.5, opacity: 1, delay: 0.5 })
-            gsap.to(".menu-div",{ duration: 1.5, opacity: 1, delay: 0.5 })
+            gsap.to(header,{ duration: 1, opacity: 1, delay: 0.5 })
+            gsap.to(".menu-div",{ duration: 1, opacity: 1, delay: 0.5 })
 
         }, 500)
 
@@ -60,7 +56,7 @@ const loadingManager = new THREE.LoadingManager(
         setTimeout(()=>{
             const obj = scene.getObjectByName('overlay')
             scene.remove(obj)
-        },2500)
+        },2000)
 
     },
 
@@ -544,8 +540,8 @@ function arriveEcran(e){
     quaternion.setFromEuler(new THREE.Euler(-camera.rotation.x,-camera.rotation.y,-camera.rotation.z))
 
     const vectPosNorm = new THREE.Vector3(objPos.x-camera.position.x,
-        objPos.y -camera.position.y,
-        objPos.z - camera.position.z)
+    objPos.y -camera.position.y,
+    objPos.z - camera.position.z)
     const vectPos = vectPosNorm.applyQuaternion(quaternion)
     
     const normalize = vectPos.clone().normalize()
