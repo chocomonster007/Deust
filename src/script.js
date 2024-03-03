@@ -93,9 +93,12 @@ const cylinderMaterial = new THREE.ShaderMaterial(
 } );
 
 const miniature = textureLoader.load('miniature.jpg')
+const miniatureDavid = textureLoader.load('miniatureDavid.jpg')
+const miniatureByl = textureLoader.load('miniatureByl.jpg')
+
+const miniatures = [miniature, miniatureDavid, miniatureByl]
 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
-
  
 cylinder1.position.set(0,1.5,0)
 cylinder1.rotation.x = Math.PI/2
@@ -793,15 +796,24 @@ document.querySelector('.menu-div').addEventListener('click',e=>{
     }
     e.target.style.display='none'
 })
+let xTime = 0
 
 //Animation 
-function tick(){
+function tick(e){
     const elapsedTime = clock.getElapsedTime()
 
     // controls.update()
     renderer.render(scene, camera)
 
     cone2.material.uniforms.uTime.value = elapsedTime
+    if(elapsedTime%5<0.005){
+        if(xTime===2){
+            xTime=0
+        }else{
+            xTime ++
+        }
+        toileMat.uniforms.uTexture.value = miniatures[xTime]
+    }
 
     raycaster.setFromCamera( pointer, camera );
 
