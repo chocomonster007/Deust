@@ -87,9 +87,19 @@ const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 2,32);
 const cylinderMaterial = new THREE.ShaderMaterial(
     {uniforms: {
         uTime:{value:0},
+        uVitesse:{value:Math.random()+0.7}
     },
     vertexShader : tubeVertex,
     fragmentShader : tubeFragment,
+} );
+
+const cylinderMaterial2 = new THREE.ShaderMaterial(
+    {uniforms: {
+        uTime:{value:0},
+        uVitesse:{value:Math.random()+0.7}
+    },
+    vertexShader : tubeVertex2,
+    fragmentShader : tubeFragment2,
 } );
 
 const miniature = textureLoader.load('miniature.jpg')
@@ -99,10 +109,21 @@ const miniatureByl = textureLoader.load('miniatureByl.jpg')
 const miniatures = [miniature, miniatureDavid, miniatureByl]
 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
- 
+const cylinder2 = new THREE.Mesh(cylinderGeometry, cylinderMaterial2)
+const cylinder3 = new THREE.Mesh(cylinderGeometry, cylinderMaterial2)
+
+
 cylinder1.position.set(0,1.5,0)
 cylinder1.rotation.x = Math.PI/2
+
+cylinder2.position.set(0,2,0)
+cylinder2.rotation.x = Math.PI/2
+
+
 scene.add(cylinder1)
+scene.add(cylinder2)
+
+
 
 
 const overlayGeometry = new THREE.PlaneGeometry(4, 4, 1, 1)
@@ -797,6 +818,7 @@ document.querySelector('.menu-div').addEventListener('click',e=>{
     e.target.style.display='none'
 })
 let xTime = 0
+let count =1
 
 //Animation 
 function tick(e){
@@ -806,18 +828,22 @@ function tick(e){
     renderer.render(scene, camera)
 
     cone2.material.uniforms.uTime.value = elapsedTime
-    if(elapsedTime%5<0.005){
+    if(elapsedTime>5*count){
         if(xTime===2){
             xTime=0
         }else{
             xTime ++
         }
         toileMat.uniforms.uTexture.value = miniatures[xTime]
+        count++
     }
 
     raycaster.setFromCamera( pointer, camera );
 
     cylinder1.material.uniforms.uTime.value = elapsedTime
+    cylinder2.material.uniforms.uTime.value = elapsedTime
+
+
 	// calculate objects intersecting the picking ray
 	intersects = raycaster.intersectObjects( scene.children );
 
