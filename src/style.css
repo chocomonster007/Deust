@@ -15,8 +15,10 @@ body{
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    height: 100dvh;
-    width: 100dvw;
+    height: 100vh;
+    height: 100svh;
+    width: 100vw;
+    width: 100svw;
     position: relative;
     z-index: -2;
     overflow-x: hidden;
@@ -287,9 +289,11 @@ header{
     z-index: 50;
 }
 ul{
-    padding-top: 10dvh;
+    padding-top: 10vh;
+    padding-top: 10svh;
     flex-direction: column;
-    height: 90dvh;
+    height: 90svh;
+    height: 90svh;
     width: 100%;
     background-color: white;
 }
