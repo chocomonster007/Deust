@@ -93,14 +93,13 @@ a{display: block;
 
 main{
     display: none;
-    flex-direction: column;
-    align-items: center;
-    height: 90%;
+    margin: 0px 10%;
+    min-height: 90%;
     z-index: 10;
 }
 .menu-div{display: none;}
 .on{
-    display: flex;
+    display: block;
 }
 
 
@@ -179,6 +178,7 @@ button:not(.active):hover::after{
 
 main h1{
     margin-top: 50px;
+    text-align: center;
 }
 
 button:not(.active){
@@ -227,6 +227,9 @@ button:not(.active):hover{
     height: 80vh;
 }
 
+#infosT iframe{
+    margin-bottom: 20vh;
+}
 @media (max-width:850px){
 .menu-div{
     display: block;
@@ -271,8 +274,9 @@ main{
 main h1{
     font-size: 1.3rem;
 }
-#infoT iframe{
+#infosT iframe{
     max-width: 80%;
+
 }
 .programme .divDej{
     height: auto;
