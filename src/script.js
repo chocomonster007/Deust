@@ -230,23 +230,11 @@ const toileMat = new THREE.ShaderMaterial({
     fragmentShader : toileFragment,
     uniforms:{
         uTexture:{value:miniature},
-        uTime:{value:0}
+        uTime:{value:0},
+        uPreviousTexture:{value:new THREE.Vector4(1,1,1,1)},
+        uTimeElapsed:{value:0}
     }
 })
-
-const cone2Geometry = new THREE.ConeGeometry(0.1,0.5)
-const cone2Material = new THREE.ShaderMaterial({
-    vertexShader : retroInVertex,
-    fragmentShader : retroInFragment,
-    blending: THREE.AdditiveBlending,
-    uniforms : {
-        uTime:{value : 0},
-    },
-
-})
-const cone2 = new THREE.Mesh(cone2Geometry, cone2Material ); 
-cone2.position.set(0.05,2.57,-1.66)
-cone2.rotation.x=Math.PI/2.5
 
 const plastiqueNoir = new THREE.MeshBasicMaterial({
     color:0x161616
@@ -697,21 +685,6 @@ document.querySelector('#interviews').addEventListener('click',e=>{
     prepareClick(e)
 })
 
-document.querySelector('#contact').addEventListener('click',e=>{
-    activeMenu('#contact')
-
-    objPos.x = contact.position.x
-    objPos.y = contact.position.y
-    objPos.z = contact.position.z
-    rotation.y = -Math.PI/2.02
-    rotation.x=0
-    rotation.z=0
-    t=infosT
-
-    prepareClick(e)
-   
-})
-
 accueil.addEventListener('click',goToAcc)
 
 function goToAcc(e){
@@ -779,7 +752,6 @@ function baladeOn(e){
         rotation.z = cameraOrigin.rotation.z
         time=undefined
         supps.forEach(supp=>supp.style.display="none")
-        document.querySelector('ul :nth-child(6)').style.borderBottom = "none"
         ecranMat.uniforms.uTime.value = 0
         e.target.dataset.lock = "false"
         arriveEcran()
@@ -788,7 +760,6 @@ function baladeOn(e){
     }else{  
         document.addEventListener("click",letsGo)
         addEventListener('pointermove',onPointerMove)
-        document.querySelector('ul :nth-child(6)').style.borderBottom = "1px solid rgba(0, 0, 0, 0.247)"
         controls.enabled = false
         supps.forEach(supp=>supp.style.display="list-item")
         e.target.innerText="Se balader"
@@ -818,7 +789,7 @@ document.querySelector('.menu-div').addEventListener('click',e=>{
     e.target.style.display='none'
 })
 let xTime = 0
-let count =1
+let count =0
 
 //Animation 
 function tick(e){
@@ -827,14 +798,19 @@ function tick(e){
     // controls.update()
     renderer.render(scene, camera)
 
-    cone2.material.uniforms.uTime.value = elapsedTime
     if(elapsedTime>5*count){
+        const previous = xTime
+
         if(xTime===2){
             xTime=0
         }else{
             xTime ++
         }
+        
+        toileMat.uniforms.uPreviousTexture.value = miniatures[previous]
+        toileMat.uniforms.uTimeElapsed.value = elapsedTime
         toileMat.uniforms.uTexture.value = miniatures[xTime]
+        console.log(previous,xTime);
         count++
     }
 
@@ -842,6 +818,7 @@ function tick(e){
 
     cylinder1.material.uniforms.uTime.value = elapsedTime
     cylinder2.material.uniforms.uTime.value = elapsedTime
+    toileMat.uniforms.uTime.value = elapsedTime
 
 
 	// calculate objects intersecting the picking ray
@@ -851,3 +828,52 @@ function tick(e){
     
 }
 tick()
+
+const txts = document.querySelectorAll('.interviewTitre')
+
+txts.forEach((txt)=>{
+    const titles = txt.querySelectorAll('h2')
+    const tl = gsap.timeline({repeat:-1,
+        repeatDelay:0})
+
+    titles.forEach(title=>{
+        const titleLetter = [...title.innerText]
+        title.innerText=''
+        titleLetter.forEach(letter=>{
+            const span = document.createElement('span')
+            span.classList.add('letter')
+            span.innerText = letter
+            if(letter===" ") {
+                if(window.innerWidth<850){
+                    span.style.width="1.5rem"
+                }else{
+                    span.style.width="1.75rem"
+                }
+            }
+            title.appendChild(span)
+        })
+
+        tl.from(title.childNodes,{
+        opacity:0,
+        y:80,
+        rotateX:-90,
+        stagger:.02
+        },"<")
+        
+        .to(title.children,{
+        opacity:1,
+        y:0,
+        rotateX:0,
+        },"<2")
+        
+        .to(title.childNodes,{
+        opacity:0,
+        y:-80,
+        rotateX:90,
+        stagger:.02
+        },"<1")
+
+    })
+})
+
+

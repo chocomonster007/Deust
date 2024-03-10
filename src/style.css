@@ -14,7 +14,7 @@
 body{
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
+    font-family: Roboto, sans-serif;
     height: 100vh;
     height: 100svh;
     width: 100vw;
@@ -22,6 +22,10 @@ body{
     position: relative;
     z-index: -2;
     overflow-x: hidden;
+}
+
+.interviews{
+    margin-bottom: 8vh;
 }
 header{
     opacity:0;
@@ -49,6 +53,22 @@ li{
     padding: 3px;
     height: 100%;
 
+}
+
+h2 > span{
+    display: inline-block;
+}
+
+.interviewTitre h2{
+    position: absolute;
+    bottom: 0;
+    text-transform: uppercase;
+    font-size: 3rem;
+}
+.interviewTitre{
+    height: 10rem;
+    position: relative;
+    margin-bottom: 2rem;
 }
 
 button{
@@ -87,13 +107,10 @@ a{display: block;
         transition: transform 0.8s ease-in-out;
     }
 
-.interviews{
-    width: 80%;
-}
 
 main{
     display: none;
-    margin: 0px 10%;
+    padding: 0px 10%;
     min-height: 90%;
     z-index: 10;
 }
@@ -124,6 +141,7 @@ main{
     position: relative;
     z-index: -1;
     height: 60%;
+    width: 35vh;
 
 }
 
@@ -133,11 +151,11 @@ main{
 }
 
 .programme{
-    height: 80%;
+    height: 70vh;
     display: flex;
     flex-direction: column;
     justify-content:space-around;
-    width:80%;
+    width:100%;
     font-size: 2rem;    
 }
 .all{
@@ -177,8 +195,9 @@ button:not(.active):hover::after{
 }
 
 main h1{
-    margin-top: 50px;
+    margin-top: 0px;
     text-align: center;
+    padding-top: 50px;
 }
 
 button:not(.active){
@@ -219,7 +238,7 @@ button:not(.active):hover{
 }
 
 #interviewT h2{
-    margin-top: 50px;
+    margin:0
 }
 
 #interviewT iframe{
@@ -229,6 +248,9 @@ button:not(.active):hover{
 
 #infosT iframe{
     margin-bottom: 20vh;
+}
+#infosT{
+    text-align: center;
 }
 @media (max-width:850px){
 .menu-div{
@@ -249,7 +271,7 @@ button:not(.active):hover{
     width: 100%;
 }
 .interviews{
-    width:90%;
+    width:100%;
     margin:auto
 }
 
@@ -276,6 +298,7 @@ main h1{
 }
 #infosT iframe{
     max-width: 80%;
+    margin-bottom: 30px;
 
 }
 .programme .divDej{
