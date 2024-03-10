@@ -275,6 +275,12 @@ button:not(.active):hover{
     margin:auto
 }
 
+.interviewTitre h2{
+    font-size: 2rem;
+}
+.interviewTitre{
+    height: 7rem;
+}
 main h1{
     margin-top: 0px;
 }
@@ -290,14 +296,14 @@ main h1{
 }
 
 main{
-    padding-top: 10vh;
+    padding: 10vh 5% 0 5%;
 }
 
 main h1{
     font-size: 1.3rem;
 }
 #infosT iframe{
-    max-width: 80%;
+    max-width: 100%;
     margin-bottom: 30px;
 
 }

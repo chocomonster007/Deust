@@ -5,8 +5,6 @@ import vertexRetro from './shader/retroVertex.glsl';
 import fragmentRetro from './shader/retroFragment.glsl';
 import vertexEcran from './shader/ecranVertex.glsl';
 import fragmentEcran from './shader/ecranFragment.glsl';
-import retroInFragment from './shader/retroInFragment.glsl'
-import retroInVertex from './shader/retroInVertex.glsl'
 import toileFragment from './shader/toileFragment.glsl'
 import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
@@ -542,7 +540,6 @@ function arriveEcran(e){
         (rotation.z - camera.rotation.z))
         const normalizeBis = vectRotNorm.clone().normalize()  
         const translationBis = Math.abs(vectRotNorm.x) < Math.abs(normalizeBis.x) ? vectRotNorm : normalizeBis;
-            
         camera.rotateX(translationBis.x*timeSpend/200)
         camera.rotateY(translationBis.y*timeSpend/200)
         camera.rotateZ(translationBis.z*timeSpend/200)
@@ -555,10 +552,12 @@ function arriveEcran(e){
     objPos.y -camera.position.y,
     objPos.z - camera.position.z)
     const vectPos = vectPosNorm.applyQuaternion(quaternion)
+    const vitesse = Math.max((Math.abs(vectPos.x)+Math.abs(vectPos.y)+Math.abs(vectPos.z))/2.5,1)
+    console.log(vitesse);
     
     const normalize = vectPos.clone().normalize()
     const translation = Math.abs(vectPos.x) < Math.abs(normalize.x) ? vectPos : normalize;
-    camera.translateOnAxis(translation,timeSpend/130)
+    camera.translateOnAxis(translation,timeSpend/130*vitesse)
     time = e
     if(Math.abs(camera.position.x-objPos.x)>0.0005 || Math.abs(camera.rotation.x-rotation.x)>0.00005) 
     {requestAnimationFrame(arriveEcran)
@@ -584,7 +583,7 @@ function arriveEcran(e){
 
     }
     
-    if(anim && Math.abs(camera.position.z-objPos.z)<0.05){
+    if(anim && Math.abs(camera.position.z-objPos.z)<0.1){
         timeAnim = new THREE.Clock()
         if(anim==="ecran") animEcran()
         else displayTemplate()
@@ -810,7 +809,6 @@ function tick(e){
         toileMat.uniforms.uPreviousTexture.value = miniatures[previous]
         toileMat.uniforms.uTimeElapsed.value = elapsedTime
         toileMat.uniforms.uTexture.value = miniatures[xTime]
-        console.log(previous,xTime);
         count++
     }
 
@@ -845,7 +843,7 @@ txts.forEach((txt)=>{
             span.innerText = letter
             if(letter===" ") {
                 if(window.innerWidth<850){
-                    span.style.width="1.5rem"
+                    span.style.width="1rem"
                 }else{
                     span.style.width="1.75rem"
                 }
