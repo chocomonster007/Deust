@@ -552,7 +552,7 @@ function arriveEcran(e){
     objPos.y -camera.position.y,
     objPos.z - camera.position.z)
     const vectPos = vectPosNorm.applyQuaternion(quaternion)
-    const vitesse = Math.max((Math.abs(vectPos.x)+Math.abs(vectPos.y)+Math.abs(vectPos.z))/2.5,1)
+    const vitesse = Math.max((Math.abs(vectPos.x)+Math.abs(vectPos.y)+Math.abs(vectPos.z))/2.5,0.8)
     console.log(vitesse);
     
     const normalize = vectPos.clone().normalize()
@@ -583,7 +583,7 @@ function arriveEcran(e){
 
     }
     
-    if(anim && Math.abs(camera.position.z-objPos.z)<0.1){
+    if(anim && Math.abs(camera.position.z-objPos.z)<0.05){
         timeAnim = new THREE.Clock()
         if(anim==="ecran") animEcran()
         else displayTemplate()

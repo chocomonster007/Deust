@@ -246,6 +246,10 @@ button:not(.active):hover{
     height: 80vh;
 }
 
+.interviewTitre h2:first-child{
+    color: #4c2da6;
+}
+
 #infosT iframe{
     margin-bottom: 20vh;
 }
