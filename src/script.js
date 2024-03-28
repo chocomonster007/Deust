@@ -10,8 +10,6 @@ import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
 import tubeVertex from './shader/tubeVertex.glsl'
 import tubeFragment from './shader/tubeFragment.glsl'
-import tubeFragment2 from './shader/tubeFragment2.glsl'
-import tubeVertex2 from './shader/tubeVertex2.glsl'
 
 const infosT = document.querySelector('#infosT')
 const programmeT = document.querySelector('#programmeT')
@@ -81,7 +79,7 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
 
-const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 2,32); 
+const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 1.5,32); 
 const cylinderMaterial = new THREE.ShaderMaterial(
     {uniforms: {
         uTime:{value:0},
@@ -91,35 +89,48 @@ const cylinderMaterial = new THREE.ShaderMaterial(
     fragmentShader : tubeFragment,
 } );
 
-const cylinderMaterial2 = new THREE.ShaderMaterial(
-    {uniforms: {
-        uTime:{value:0},
-        uVitesse:{value:Math.random()+0.7}
-    },
-    vertexShader : tubeVertex2,
-    fragmentShader : tubeFragment2,
-} );
 
 const miniature = textureLoader.load('miniature.jpg')
 const miniatureDavid = textureLoader.load('miniatureDavid.jpg')
 const miniatureByl = textureLoader.load('miniatureByl.jpg')
+const miniatureAdamou = textureLoader.load('Adamou.jpg')
 
-const miniatures = [miniature, miniatureDavid, miniatureByl]
+
+const miniatures = [miniature, miniatureDavid, miniatureByl, miniatureAdamou]
 
 const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
-const cylinder2 = new THREE.Mesh(cylinderGeometry, cylinderMaterial2)
-const cylinder3 = new THREE.Mesh(cylinderGeometry, cylinderMaterial2)
+const cylinder2 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
+const cylinder3 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
+const cylinder4 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
+const cylinder5 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
+const cylinder6 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
 
 
-cylinder1.position.set(0,1.5,0)
+cylinder1.position.set(-5,1.5,0)
 cylinder1.rotation.x = Math.PI/2
 
-cylinder2.position.set(0,2,0)
+cylinder2.position.set(-4.8,2,-5)
 cylinder2.rotation.x = Math.PI/2
+
+cylinder3.position.set(-4.8,2,-5)
+cylinder3.rotation.x = Math.PI/2
+cylinder4.position.set(-4.9,1.3,-10)
+cylinder4.rotation.x = Math.PI/2
+cylinder5.position.set(-4.8,1.7,-15)
+cylinder5.rotation.x = Math.PI/2
+cylinder6.position.set(-4.8,1.9,-20)
+cylinder6.rotation.x = Math.PI/2
+
+
 
 
 scene.add(cylinder1)
 scene.add(cylinder2)
+scene.add(cylinder3)
+scene.add(cylinder4)
+scene.add(cylinder5)
+scene.add(cylinder6)
+
 
 
 
@@ -552,8 +563,7 @@ function arriveEcran(e){
     objPos.y -camera.position.y,
     objPos.z - camera.position.z)
     const vectPos = vectPosNorm.applyQuaternion(quaternion)
-    const vitesse = Math.max((Math.abs(vectPos.x)+Math.abs(vectPos.y)+Math.abs(vectPos.z))/2.5,0.8)
-    console.log(vitesse);
+    const vitesse = Math.max((Math.abs(vectPos.x)+Math.abs(vectPos.y)+Math.abs(vectPos.z))/2.5,1)
     
     const normalize = vectPos.clone().normalize()
     const translation = Math.abs(vectPos.x) < Math.abs(normalize.x) ? vectPos : normalize;
@@ -800,11 +810,7 @@ function tick(e){
     if(elapsedTime>5*count){
         const previous = xTime
 
-        if(xTime===2){
-            xTime=0
-        }else{
-            xTime ++
-        }
+        xTime = (xTime+1) %4
         
         toileMat.uniforms.uPreviousTexture.value = miniatures[previous]
         toileMat.uniforms.uTimeElapsed.value = elapsedTime
@@ -815,7 +821,6 @@ function tick(e){
     raycaster.setFromCamera( pointer, camera );
 
     cylinder1.material.uniforms.uTime.value = elapsedTime
-    cylinder2.material.uniforms.uTime.value = elapsedTime
     toileMat.uniforms.uTime.value = elapsedTime
 
 

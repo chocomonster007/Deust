@@ -4,8 +4,8 @@ uniform float uVitesse;
 
 void main(){
     vec4 modelPosition = modelMatrix * vec4(position,1.0);
-    modelPosition.z += 25.0*cos(uTime*2.0*uVitesse);
-    modelPosition.x += 6.0*sin(uTime*2.0*uVitesse);
+    modelPosition.z += mod(35.0*uTime, 40.0) -20.0;
+    modelPosition.y += sin(uVitesse*uTime/2.0)/2.0;
 
     vec4 viewPositon = viewMatrix * modelPosition;
     vec4 projectedPosition = projectionMatrix * viewPositon;
