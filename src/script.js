@@ -8,8 +8,7 @@ import fragmentEcran from './shader/ecranFragment.glsl';
 import toileFragment from './shader/toileFragment.glsl'
 import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
-import tubeVertex from './shader/tubeVertex.glsl'
-import tubeFragment from './shader/tubeFragment.glsl'
+
 
 const infosT = document.querySelector('#infosT')
 const programmeT = document.querySelector('#programmeT')
@@ -79,15 +78,51 @@ const textureLoader = new THREE.TextureLoader(loadingManager)
 const gltfLoader = new GLTFLoader(loadingManager)
 // gltfLoader.setDRACOLoader(dracoLoader)
 
-const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 1.5,32); 
-const cylinderMaterial = new THREE.ShaderMaterial(
-    {uniforms: {
-        uTime:{value:0},
-        uVitesse:{value:Math.random()+0.7}
-    },
-    vertexShader : tubeVertex,
-    fragmentShader : tubeFragment,
-} );
+
+function createCylindre(zPosition,vitesse,yPosition, rotVitesse, signeRot, rotDelai){
+    const signe = signeRot < 0.5 ? 1.0 : -1.0
+    const cylinderGeometry = new THREE.CylinderGeometry( 0.02, 0.02, 1.3,2); 
+    const cylinderMaterial = new THREE.ShaderMaterial(
+        {uniforms: {
+            uTime:{value:0},
+            uVitesse:{value:vitesse},
+            uRot:{value: rotVitesse},
+            zPos:{value:zPosition},
+            uSigne:{value:signe},
+            uDelai:{value:rotDelai}
+        },
+        vertexShader : `uniform float uTime;
+        uniform float uVitesse;
+        uniform float uRot;
+        uniform float zPos;
+        uniform float uSigne;
+        uniform float uDelai;
+        
+        void main(){
+            vec4 modelPosition = modelMatrix * vec4(position,1.0);
+            modelPosition.z += mod(uVitesse*16.0*uTime, 40.0) ;
+            modelPosition.y += uSigne * (sin(uDelai+(uTime/uRot))/2.0);
+        
+            vec4 viewPositon = viewMatrix * modelPosition;
+            vec4 projectedPosition = projectionMatrix * viewPositon;
+        
+            gl_Position = projectedPosition;
+        }`,
+        fragmentShader : `
+        void main()
+        {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    `
+    } );
+
+    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial)
+    cylinder.position.set(-5,yPosition,zPosition)
+    cylinder.rotation.x = Math.PI/2
+
+    return cylinder
+
+}
 
 
 const miniature = textureLoader.load('miniature.jpg')
@@ -98,42 +133,12 @@ const miniatureAdamou = textureLoader.load('Adamou.jpg')
 
 const miniatures = [miniature, miniatureDavid, miniatureByl, miniatureAdamou]
 
-const cylinder1 = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
-const cylinder2 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
-const cylinder3 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
-const cylinder4 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
-const cylinder5 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
-const cylinder6 = new THREE.Mesh(cylinderGeometry,cylinderMaterial)
+const cylinder = []
 
-
-cylinder1.position.set(-5,1.5,0)
-cylinder1.rotation.x = Math.PI/2
-
-cylinder2.position.set(-4.8,2,-5)
-cylinder2.rotation.x = Math.PI/2
-
-cylinder3.position.set(-4.8,2,-5)
-cylinder3.rotation.x = Math.PI/2
-cylinder4.position.set(-4.9,1.3,-10)
-cylinder4.rotation.x = Math.PI/2
-cylinder5.position.set(-4.8,1.7,-15)
-cylinder5.rotation.x = Math.PI/2
-cylinder6.position.set(-4.8,1.9,-20)
-cylinder6.rotation.x = Math.PI/2
-
-
-
-
-scene.add(cylinder1)
-scene.add(cylinder2)
-scene.add(cylinder3)
-scene.add(cylinder4)
-scene.add(cylinder5)
-scene.add(cylinder6)
-
-
-
-
+for(let i =0;i<150;i++){
+    cylinder.push(createCylindre(- Math.random()*40.0-10.0,1.0+Math.random(), 0.6+Math.random()*2.5, 1.0+Math.random()*3.0, Math.random(), Math.random()))
+    scene.add(cylinder[i])
+}
 
 const overlayGeometry = new THREE.PlaneGeometry(4, 4, 1, 1)
 const overlayMaterial = new THREE.ShaderMaterial({
@@ -820,7 +825,9 @@ function tick(e){
 
     raycaster.setFromCamera( pointer, camera );
 
-    cylinder1.material.uniforms.uTime.value = elapsedTime
+    cylinder.forEach(el=>el.material.uniforms.uTime.value = elapsedTime)
+
+
     toileMat.uniforms.uTime.value = elapsedTime
 
 
