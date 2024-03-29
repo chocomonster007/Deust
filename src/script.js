@@ -135,7 +135,7 @@ const miniatures = [miniature, miniatureDavid, miniatureByl, miniatureAdamou]
 
 const cylinder = []
 
-for(let i =0;i<150;i++){
+for(let i =0;i<100;i++){
     cylinder.push(createCylindre(- Math.random()*40.0-10.0,1.0+Math.random(), 0.6+Math.random()*2.5, 1.0+Math.random()*3.0, Math.random(), Math.random()))
     scene.add(cylinder[i])
 }
@@ -234,6 +234,9 @@ const ecranMat = new THREE.ShaderMaterial({
     fragmentShader : fragmentEcran,
     uniforms:{
         uTime:{
+            value:0
+        },
+        uTimeBis:{
             value:0
         }
     }
@@ -701,11 +704,17 @@ document.querySelector('#interviews').addEventListener('click',e=>{
 
 accueil.addEventListener('click',goToAcc)
 
+function animationEcranOff(){
+    ecranMat.uniforms.uTimeBis.value=clockAnimOff.getElapsedTime()
+    console.log("pif");
+    requestAnimationFrame(animationEcranOff)
+}
+let clockAnimOff
 function goToAcc(e){
     e.stopPropagation()
-    if(parseInt(getComputedStyle(e.target).width)>200){
-
-        
+    clockAnimOff = new THREE.Clock()
+    animationEcranOff()
+    if(parseInt(getComputedStyle(e.target).width)>200){  
         header.dataset.open = "false"
         close.style.display = "none"
         
