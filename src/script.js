@@ -671,6 +671,7 @@ function activeMenu(element){
     document.querySelectorAll('button').forEach(button=>{
         button.classList.remove('active')
         document.querySelector(element).classList.add('active')
+
         })
 }
 
@@ -756,23 +757,34 @@ function animEcran(){
 
 
 header.addEventListener('click',e=>e.stopPropagation())
+let listenerStop = ()=>{}
 
-document.querySelector('#infos').addEventListener('click',e=>{
-        activeMenu('#infos')
-        objPos.x = infos.position.x
-        rotation.x = 0
-        rotation.y = 0
-        rotation.z = 0
-        objPos.y = infos.position.y
-        objPos.z = infos.position.z
-        t=infosT
-        prepareClick(e)
-        anim = "ecran"
+document.querySelector('#infos').addEventListener('click',infoGo)
+function infoGo(e){
+    e.target.removeEventListener('click',infoGo)
+    listenerStop()
+    listenerStop = ()=>{
+        document.querySelector('#infos').addEventListener('click',infoGo)
+    }
+    activeMenu('#infos')
+    objPos.x = infos.position.x
+    rotation.x = 0
+    rotation.y = 0
+    rotation.z = 0
+    objPos.y = infos.position.y
+    objPos.z = infos.position.z
+    t=infosT
+    prepareClick(e)
+    anim = "ecran"
+}
 
-
-})
-document.querySelector('#programme').addEventListener('click',e=>{
-
+document.querySelector('#programme').addEventListener('click',programmeGo)
+function programmeGo(e){
+    e.target.removeEventListener('click',programmeGo)
+    listenerStop()
+    listenerStop = ()=>{
+        document.querySelector('#programme').addEventListener('click',programmeGo)
+    }
     activeMenu('#programme')
     objPos.x = programme.position.x
     objPos.y = programme.position.y
@@ -783,8 +795,7 @@ document.querySelector('#programme').addEventListener('click',e=>{
     t= programmeT
     prepareClick(e)
     anim = "ecran"
-
-})
+}
 
 function prepareClick(e){
     e.stopPropagation()
@@ -810,10 +821,16 @@ function prepareClick(e){
     arriveEcran()
 }
 
-document.querySelector('#interviews').addEventListener('click',e=>{
+document.querySelector('#interviews').addEventListener('click',interviewGo)
+
+function interviewGo(e){
     activeMenu('#interviews')
     document.querySelector('#interviewT').classList.remove('animEntrance')
-
+    e.target.removeEventListener('click',interviewGo)
+    listenerStop()
+    listenerStop = ()=>{
+        document.querySelector('#interviews').addEventListener('click',interviewGo)
+    }
     t = interviewT
     rotation.x = 0
     rotation.y = 0
@@ -825,12 +842,14 @@ document.querySelector('#interviews').addEventListener('click',e=>{
     objPos.z = interview.position.z
     anim="ecran"
     prepareClick(e)
-})
+}
 
 accueil.addEventListener('click',goToAcc)
 
 
 function goToAcc(e){
+    listenerStop()
+    listenerStop = ()=>{}
     e.stopPropagation()
     allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
 
