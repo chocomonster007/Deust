@@ -3,10 +3,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import vertexRetro from './shader/retroVertex.glsl';
 import fragmentRetro from './shader/retroFragment.glsl';
-import vertexEcran from './shader/ecranVertex.glsl';
-import fragmentEcran from './shader/ecranFragment.glsl';
-import toileFragment from './shader/toileFragment.glsl'
-import toileVertex from './shader/toileVertex.glsl'
 import { gsap } from 'gsap'
 
 
@@ -100,7 +96,7 @@ function createCylindre(zPosition,vitesse,yPosition, rotVitesse, signeRot, rotDe
         
         void main(){
             vec4 modelPosition = modelMatrix * vec4(position,1.0);
-            modelPosition.z += mod(uVitesse*16.0*uTime, 40.0) ;
+            modelPosition.z += mod(uVitesse*14.0*uTime, 40.0) ;
             modelPosition.y += uSigne * (sin(uDelai+(uTime/uRot))/2.0);
         
             vec4 viewPositon = viewMatrix * modelPosition;
@@ -126,9 +122,13 @@ function createCylindre(zPosition,vitesse,yPosition, rotVitesse, signeRot, rotDe
 
 
 const miniature = textureLoader.load('miniature.jpg')
-const miniatureDavid = textureLoader.load('miniatureDavid.jpg')
+miniature.flipY = false
+const miniatureDavid = textureLoader.load('david.jpg')
+miniatureDavid.flipY = false
 const miniatureByl = textureLoader.load('miniatureByl.jpg')
+miniatureByl.flipY=false
 const miniatureAdamou = textureLoader.load('Adamou.jpg')
+miniatureAdamou.flipY = false
 
 
 const miniatures = [miniature, miniatureDavid, miniatureByl, miniatureAdamou]
@@ -166,6 +166,14 @@ const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
 overlay.name = "overlay"
 scene.add(overlay)
 
+const prograImg = textureLoader.load('progra.jpg')
+prograImg.flipY = false
+
+const infosImg = textureLoader.load('infos.jpg')
+infosImg.flipY = false
+
+const retroImg = textureLoader.load('huge.jpg')
+retroImg.colorSpace = THREE.SRGBColorSpace
 
 const pancarteBaked = textureLoader.load('PANCARTE.jpg')
 pancarteBaked.flipY =false
@@ -229,29 +237,122 @@ cone.position.set(0.05,2.5,-1.88)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
 
-const ecranMat = new THREE.ShaderMaterial({
-    vertexShader : vertexEcran,
-    fragmentShader : fragmentEcran,
-    uniforms:{
-        uTime:{
-            value:0
+function createEcranMat(decalage,timeX){
+    return new THREE.ShaderMaterial({
+        uniforms:{
+            uTime:{
+                value:0
+            },
+            uTimeBis:{
+                value:0
+            },
+            uTexture:{
+                value:0
+            },
+            uDecalage: {value:decalage},
+            uTimeX: {value:timeX}
         },
-        uTimeBis:{
-            value:0
-        }
-    }
+        vertexShader:`
+        varying vec2 vUv;
+
+        void main(){
+            vec4 modelPosition = modelMatrix * vec4(position,1.0);
+            vec4 viewPositon = viewMatrix * modelPosition;
+            vec4 projectedPosition = projectionMatrix * viewPositon;
+
+            gl_Position = projectedPosition;
+            vUv=uv;
+        }`,
+        fragmentShader:`       
+        uniform float uTime;
+        uniform float uTimeBis;
+        uniform float uDecalage;
+        uniform float uTimeX;
+        varying vec2 vUv;
+        uniform sampler2D uTexture;
+
+        void main(){
+            vec2 duplicateUv = vUv;
+            float timeTruc = min((sin(uDecalage+uTime/(uTimeX-5.0))-0.8)*uTimeX,1.01);
+            float click = 1.0-uTimeBis;
+
+            float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
+            float colorBis = step(click,1.0-abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
+            vec4 textureColor = texture2D(uTexture, vUv);
+
+            vec4 finalTexture = mix(textureColor, vec4(0.0,0.0,0.0,1.0),color);
+            finalTexture = mix(finalTexture, vec4(1.0,1.0,1.0,1.0), colorBis);
+
+            gl_FragColor = finalTexture;
+        }`
+    })
+}
+
+function createEcranMatInt(decalage,timeX){
+    return new THREE.ShaderMaterial({
+        uniforms:{
+            uTime:{
+                value:0
+            },
+            uTimeBis:{
+                value:0
+            },
+            uTexture:{
+                value:0
+            },
+            uDecalage: {value:decalage},
+            uTimeX: {value:timeX},
+            uTimeElapsed:{value:0},
+            uPreviousTexture: {value:new THREE.Vector4(1.0,1.0,1,1)}
+        },
+        vertexShader:`
+        varying vec2 vUv;
+
+        void main(){
+            vec4 modelPosition = modelMatrix * vec4(position,1.0);
+            vec4 viewPositon = viewMatrix * modelPosition;
+            vec4 projectedPosition = projectionMatrix * viewPositon;
+
+            gl_Position = projectedPosition;
+            vUv=uv;
+        }`,
+        fragmentShader:`       
+        uniform float uTime;
+        uniform float uTimeBis;
+        uniform float uTimeElapsed;
+        uniform float uDecalage;
+        uniform float uTimeX;
+        varying vec2 vUv;
+        uniform sampler2D uTexture;
+        uniform sampler2D uPreviousTexture;
+
+
+        void main(){
+            float faster = (uTime - uTimeElapsed)*2.5;
+
+            vec2 duplicateUv = vUv;
+            float timeTruc = min((sin(uDecalage+uTime/(uTimeX-5.0))-0.8)*uTimeX,1.01);
+            float click = 1.0-uTimeBis;
+
+            float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
+            float colorBis = step(click,1.0-abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
+            vec4 textureColor = texture2D(uTexture, vUv);
+            vec4 previousTextureColor = texture2D(uPreviousTexture,vUv);
+
+            float interpolation = min(faster,1.0);
+            vec4 mixColor = mix(previousTextureColor,textureColor, interpolation);
+            vec4 finalTexture = mix(mixColor, vec4(0.0,0.0,0.0,1.0),color);
+            finalTexture = mix(finalTexture, vec4(1.0,1.0,1.0,1.0), colorBis);
+
+            gl_FragColor = finalTexture;
+        }`
+    })
+}
+
+const retroMaterial = new THREE.MeshBasicMaterial({
+    map:retroImg
 })
 
-const toileMat = new THREE.ShaderMaterial({
-    vertexShader : toileVertex,
-    fragmentShader : toileFragment,
-    uniforms:{
-        uTexture:{value:miniature},
-        uTime:{value:0},
-        uPreviousTexture:{value:new THREE.Vector4(1,1,1,1)},
-        uTimeElapsed:{value:0}
-    }
-})
 
 const plastiqueNoir = new THREE.MeshBasicMaterial({
     color:0x161616
@@ -287,13 +388,15 @@ const textMat = new THREE.MeshBasicMaterial({
 
 const planeGeo = new THREE.PlaneGeometry(3.3,1.86,8,8)
 
-const planeM = new THREE.Mesh(planeGeo, toileMat)
+const planeM = new THREE.Mesh(planeGeo, retroMaterial)
 planeM.position.set(-0.03,1.55,-5.8)
 planeM.name="toileRetro"
 
 scene.add(planeM)
 
 scene.add( cone );
+const allScreen = []
+const interwiewScreen = []
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
@@ -311,10 +414,31 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const myecran = gltf.scene.children.find(child=>child.name=="écran")
     const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
     const texte = gltf.scene.children.find(child=>child.name=="Texte")
-    const ecrans = gltf.scene.children.filter(child=>/écrans[0-9]{2}/.test(child.name))
+    const ecransInfos = gltf.scene.children.filter(ecran=>["écrans13","écrans12","écrans20","écrans23","écrans31","écrans40","écrans34"].includes(ecran.name))
+    const ecransProgra = gltf.scene.children.filter(ecran=>["écrans14","écrans10","écrans21","écrans24","écrans41","écrans43","écrans33"].includes(ecran.name))
+    const ecransInterview = gltf.scene.children.filter(ecran=>["écrans11","écrans22","écrans30","écrans32","écrans42","écrans44"].includes(ecran.name))
 
 
-    ecrans.forEach(ecran=>ecran.material = ecranMat)
+
+    ecransInfos.forEach(ecran=>{ecran.material = createEcranMat(Math.random()*100,10+Math.random()*10)
+                                ecran.material.uniforms.uTexture.value = infosImg
+                            allScreen.push(ecran)})
+    ecransProgra.forEach(ecran=>{
+        ecran.material = createEcranMat(Math.random()*100,10+Math.random()*10)
+                                ecran.material.uniforms.uTexture.value = prograImg
+                            allScreen.push(ecran)
+    })
+
+    ecransInterview.forEach((ecran,i)=>{
+        ecran.material = createEcranMatInt(Math.random()*100,10+Math.random()*10)
+                                const id = i%4
+                                ecran.material.uniforms.uTexture.value = miniatures[id]
+                                ecran.previousImg = id
+                                ecran.material.uniforms.uPreviousTexture.value = 0
+                            allScreen.push(ecran)
+                            interwiewScreen.push(ecran)
+    })
+
     texte.material = textMat
 
 
@@ -362,9 +486,9 @@ const cameraOrigin = {
 
 const interview = {
     position:{
-        x:-0.0304374098777771,
-        y:1.4881799221038818,
-        z:-4.3039751052856445
+        x:0.7003335952758789,
+        y:0.8755115270614624,
+        z:1.3383538722991943+0.25
 
     }
 }
@@ -515,17 +639,24 @@ function letsGo(event){
         if(/écrans[0-9]{2}/.test(interObj.name)){
             objPos.z += 0.25
             anim="ecran"
-            if(/écrans[1-2][0-9]/.test(interObj.name)){
+            if(["écrans13","écrans12","écrans20","écrans23","écrans31","écrans40","écrans34"].includes(interObj.name)){
                 t = infosT
                 activeMenu('#infos')
-            }else{
+            }else if(["écrans14","écrans10","écrans21","écrans24","écrans41","écrans43","écrans33"].includes(interObj.name)){
                 activeMenu('#programme')
                 t= programmeT
+            }else{
+            document.querySelector('#interviewT').classList.remove('animEntrance')
+
+                console.log(interObj.position);
+                activeMenu('#interviews')
+                t = interviewT
             }
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
             activeMenu('#interviews')
+            document.querySelector('#interviewT').classList.add('animEntrance')
             t = interviewT
             anim="toile"
         }
@@ -612,10 +743,12 @@ function arriveEcran(e){
 
 function animEcran(){
     const elapsedTimeAnim = timeAnim.getElapsedTime()
-    ecranMat.uniforms.uTime.value = elapsedTimeAnim
-    if(1-Math.abs(0.29*0.14)<1.01-elapsedTimeAnim/10){
+    console.log(elapsedTimeAnim);
+    allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = elapsedTimeAnim)
+    if(elapsedTimeAnim<0.3){
         requestAnimationFrame(animEcran)
     }else{
+
         displayTemplate()
     }  
 
@@ -641,13 +774,9 @@ document.querySelector('#infos').addEventListener('click',e=>{
 document.querySelector('#programme').addEventListener('click',e=>{
 
     activeMenu('#programme')
-    anim = true
-    
-    anim = true
     objPos.x = programme.position.x
     objPos.y = programme.position.y
     objPos.z = programme.position.z
-
     rotation.x = 0
     rotation.y = 0
     rotation.z = 0
@@ -662,7 +791,6 @@ function prepareClick(e){
     accueil.removeEventListener('click',goToAcc)
     window.removeEventListener('pointermove',onPointerMove)
     document.body.style.cursor = "default"
-    ecranMat.uniforms.uTime.value = 0
     suppTemplate()
     if(parseInt(getComputedStyle(e.target).width)>200){
 
@@ -684,11 +812,8 @@ function prepareClick(e){
 
 document.querySelector('#interviews').addEventListener('click',e=>{
     activeMenu('#interviews')
+    document.querySelector('#interviewT').classList.remove('animEntrance')
 
-    ecranMat.uniforms.uTime.value = 0
-    t = interviewT
-  
-    ecranMat.uniforms.uTime.value = 0
     t = interviewT
     rotation.x = 0
     rotation.y = 0
@@ -698,22 +823,18 @@ document.querySelector('#interviews').addEventListener('click',e=>{
     objPos.x = interview.position.x
     objPos.y = interview.position.y
     objPos.z = interview.position.z
-    anim="toile"
+    anim="ecran"
     prepareClick(e)
 })
 
 accueil.addEventListener('click',goToAcc)
 
-function animationEcranOff(){
-    ecranMat.uniforms.uTimeBis.value=clockAnimOff.getElapsedTime()
-    console.log("pif");
-    requestAnimationFrame(animationEcranOff)
-}
-let clockAnimOff
+
 function goToAcc(e){
     e.stopPropagation()
-    clockAnimOff = new THREE.Clock()
-    animationEcranOff()
+    allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
+
+
     if(parseInt(getComputedStyle(e.target).width)>200){  
         header.dataset.open = "false"
         close.style.display = "none"
@@ -737,8 +858,6 @@ function goToAcc(e){
     rotation.x = cameraOrigin.rotation.x
     rotation.y = cameraOrigin.rotation.y
     rotation.z = cameraOrigin.rotation.z
-    ecranMat.uniforms.uTime.value = 0
-    toileMat.uniforms.uTime.value =0
     time=undefined
    arriveEcran()
 }
@@ -747,6 +866,7 @@ document.querySelector('#balade').addEventListener('click',baladeOn)
 function baladeOn(e){
     e.stopPropagation()
     activeMenu('#balade')
+    allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
     document.querySelector('#balade').removeEventListener('click',baladeOn)
 
     if(parseInt(getComputedStyle(e.target).width)>200){
@@ -775,7 +895,6 @@ function baladeOn(e){
         rotation.z = cameraOrigin.rotation.z
         time=undefined
         supps.forEach(supp=>supp.style.display="none")
-        ecranMat.uniforms.uTime.value = 0
         e.target.dataset.lock = "false"
         arriveEcran()
         
@@ -811,7 +930,6 @@ document.querySelector('.menu-div').addEventListener('click',e=>{
     }
     e.target.style.display='none'
 })
-let xTime = 0
 let count =0
 
 //Animation 
@@ -822,13 +940,15 @@ function tick(e){
     renderer.render(scene, camera)
 
     if(elapsedTime>5*count){
-        const previous = xTime
-
-        xTime = (xTime+1) %4
         
-        toileMat.uniforms.uPreviousTexture.value = miniatures[previous]
-        toileMat.uniforms.uTimeElapsed.value = elapsedTime
-        toileMat.uniforms.uTexture.value = miniatures[xTime]
+        interwiewScreen.forEach(ecran=>{
+            const id = (ecran.previousImg +1) %4
+            ecran.material.uniforms.uPreviousTexture.value = miniatures[ecran.previousImg]
+            ecran.material.uniforms.uTimeElapsed.value = elapsedTime
+            ecran.material.uniforms.uTexture.value = miniatures[id]
+            ecran.previousImg = id
+        })
+
         count++
     }
 
@@ -837,8 +957,7 @@ function tick(e){
     cylinder.forEach(el=>el.material.uniforms.uTime.value = elapsedTime)
 
 
-    toileMat.uniforms.uTime.value = elapsedTime
-
+    allScreen.forEach(ecran=>ecran.material.uniforms.uTime.value = elapsedTime)
 
 	// calculate objects intersecting the picking ray
 	intersects = raycaster.intersectObjects( scene.children );

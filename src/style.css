@@ -231,8 +231,12 @@ button:not(.active):hover{
     width: 80%;
 }
 
-#interviewT{
+.animEntrance{
     animation: animInterview 0.3s ease-out;
+}
+
+#interviewT{
+    /**animation: animInterview 0.3s ease-out; **/
     background-color: white;
     min-height: 100vh;
     padding-bottom: 10vh;
