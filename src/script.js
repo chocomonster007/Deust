@@ -96,7 +96,7 @@ function createCylindre(zPosition,vitesse,yPosition, rotVitesse, signeRot, rotDe
         
         void main(){
             vec4 modelPosition = modelMatrix * vec4(position,1.0);
-            modelPosition.z += mod(uVitesse*14.0*uTime, 40.0) ;
+            modelPosition.z += mod(uVitesse*14.0*uTime+zPos, 30.0) ;
             modelPosition.y += uSigne * (sin(uDelai+(uTime/uRot))/2.0);
         
             vec4 viewPositon = viewMatrix * modelPosition;
@@ -113,7 +113,7 @@ function createCylindre(zPosition,vitesse,yPosition, rotVitesse, signeRot, rotDe
     } );
 
     const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial)
-    cylinder.position.set(-5,yPosition,zPosition)
+    cylinder.position.set(-5,yPosition,-15)
     cylinder.rotation.x = Math.PI/2
 
     return cylinder
@@ -135,8 +135,8 @@ const miniatures = [miniature, miniatureDavid, miniatureByl, miniatureAdamou]
 
 const cylinder = []
 
-for(let i =0;i<100;i++){
-    cylinder.push(createCylindre(- Math.random()*40.0-10.0,1.0+Math.random(), 0.6+Math.random()*2.5, 1.0+Math.random()*3.0, Math.random(), Math.random()))
+for(let i =0;i<20;i++){
+    cylinder.push(createCylindre((Math.random()-0.5)*30,1.0+Math.random(), 0.6+Math.random()*2.5, 1.0+Math.random()*3.0, Math.random(), Math.random()))
     scene.add(cylinder[i])
 }
 
@@ -166,10 +166,10 @@ const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
 overlay.name = "overlay"
 scene.add(overlay)
 
-const prograImg = textureLoader.load('progra.jpg')
+const prograImg = textureLoader.load('prograBis.jpg')
 prograImg.flipY = false
 
-const infosImg = textureLoader.load('infos.jpg')
+const infosImg = textureLoader.load('infosBis.jpg')
 infosImg.flipY = false
 
 const retroImg = textureLoader.load('huge.jpg')
@@ -237,7 +237,7 @@ cone.position.set(0.05,2.5,-1.88)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
 
-function createEcranMat(decalage,timeX){
+function createEcranMat(id,timeX, length){
     return new THREE.ShaderMaterial({
         uniforms:{
             uTime:{
@@ -249,8 +249,9 @@ function createEcranMat(decalage,timeX){
             uTexture:{
                 value:0
             },
-            uDecalage: {value:decalage},
-            uTimeX: {value:timeX}
+            uDecalage: {value:id},
+            uTimeX: {value:timeX},
+            uLength:{value:length}
         },
         vertexShader:`
         varying vec2 vUv;
@@ -268,12 +269,18 @@ function createEcranMat(decalage,timeX){
         uniform float uTimeBis;
         uniform float uDecalage;
         uniform float uTimeX;
+        uniform float uLength;
         varying vec2 vUv;
         uniform sampler2D uTexture;
 
         void main(){
             vec2 duplicateUv = vUv;
-            float timeTruc = min((sin(uDecalage+uTime/(uTimeX-5.0))-0.8)*uTimeX,1.01);
+            float timeExec = (trunc(mod(uTime/uTimeX,uLength))+1.0)/(uDecalage+1.0);
+            float timeSpend = (mod(uTime,uTimeX)/uTimeX)*3.14;
+            float timeA = step(1.01,timeExec);
+            float timeB = step(1.0,timeExec);
+            float timeF = (timeB-timeA);
+            float timeTruc = min((sin(timeF*timeSpend)*uTimeX),1.01);
             float click = 1.0-uTimeBis;
 
             float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
@@ -282,13 +289,14 @@ function createEcranMat(decalage,timeX){
 
             vec4 finalTexture = mix(textureColor, vec4(0.0,0.0,0.0,1.0),color);
             finalTexture = mix(finalTexture, vec4(1.0,1.0,1.0,1.0), colorBis);
+            
 
             gl_FragColor = finalTexture;
         }`
     })
 }
 
-function createEcranMatInt(decalage,timeX){
+function createEcranMatInt(decalage,timeX,length){
     return new THREE.ShaderMaterial({
         uniforms:{
             uTime:{
@@ -303,7 +311,8 @@ function createEcranMatInt(decalage,timeX){
             uDecalage: {value:decalage},
             uTimeX: {value:timeX},
             uTimeElapsed:{value:0},
-            uPreviousTexture: {value:new THREE.Vector4(1.0,1.0,1,1)}
+            uPreviousTexture: {value:new THREE.Vector4(1.0,1.0,1,1)},
+            uLength:{value:length}
         },
         vertexShader:`
         varying vec2 vUv;
@@ -322,6 +331,7 @@ function createEcranMatInt(decalage,timeX){
         uniform float uTimeElapsed;
         uniform float uDecalage;
         uniform float uTimeX;
+        uniform float uLength;
         varying vec2 vUv;
         uniform sampler2D uTexture;
         uniform sampler2D uPreviousTexture;
@@ -331,7 +341,12 @@ function createEcranMatInt(decalage,timeX){
             float faster = (uTime - uTimeElapsed)*2.5;
 
             vec2 duplicateUv = vUv;
-            float timeTruc = min((sin(uDecalage+uTime/(uTimeX-5.0))-0.8)*uTimeX,1.01);
+            float timeExec = (trunc(mod(uTime/uTimeX,uLength))+1.0)/(uDecalage+1.0);
+            float timeSpend = (mod(uTime,uTimeX)/uTimeX)*3.14;
+            float timeA = step(1.01,timeExec);
+            float timeB = step(1.0,timeExec);
+            float timeF = (timeB-timeA);
+            float timeTruc = min((sin(timeF*timeSpend)*uTimeX),1.01);
             float click = 1.0-uTimeBis;
 
             float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
@@ -397,6 +412,8 @@ scene.add(planeM)
 scene.add( cone );
 const allScreen = []
 const interwiewScreen = []
+const ecransInfos = []
+const ecransProgra = []
 
 gltfLoader.load('deustSalle.glb',gltf=>{
     scene.add(gltf.scene)
@@ -414,29 +431,32 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const myecran = gltf.scene.children.find(child=>child.name=="écran")
     const objetMetal = gltf.scene.children.find(child=>child.name=="loquetPorte")
     const texte = gltf.scene.children.find(child=>child.name=="Texte")
-    const ecransInfos = gltf.scene.children.filter(ecran=>["écrans13","écrans12","écrans20","écrans23","écrans31","écrans40","écrans34"].includes(ecran.name))
-    const ecransProgra = gltf.scene.children.filter(ecran=>["écrans14","écrans10","écrans21","écrans24","écrans41","écrans43","écrans33"].includes(ecran.name))
-    const ecransInterview = gltf.scene.children.filter(ecran=>["écrans11","écrans22","écrans30","écrans32","écrans42","écrans44"].includes(ecran.name))
+    ecransInfos.push(...gltf.scene.children.filter(ecran=>["écrans13","écrans12","écrans20","écrans23","écrans31","écrans40","écrans34"].includes(ecran.name)))
+    ecransProgra.push(...gltf.scene.children.filter(ecran=>["écrans14","écrans10","écrans21","écrans24","écrans41","écrans43","écrans33"].includes(ecran.name)))
+    interwiewScreen.push(...gltf.scene.children.filter(ecran=>["écrans11","écrans22","écrans30","écrans32","écrans42","écrans44"].includes(ecran.name)))
 
+    const timeXInfos = 6+Math.random()*5
+    const timeXProgra = 6+Math.random()*5
+    const timeXinterview = 5+Math.random()*5
 
+    ecransInfos.forEach((ecran,i)=>{
+        ecran.material = createEcranMat(i,timeXInfos,ecransInfos.length)
+        ecran.material.uniforms.uTexture.value = infosImg
+        allScreen.push(ecran)})
 
-    ecransInfos.forEach(ecran=>{ecran.material = createEcranMat(Math.random()*100,10+Math.random()*10)
-                                ecran.material.uniforms.uTexture.value = infosImg
-                            allScreen.push(ecran)})
-    ecransProgra.forEach(ecran=>{
-        ecran.material = createEcranMat(Math.random()*100,10+Math.random()*10)
-                                ecran.material.uniforms.uTexture.value = prograImg
-                            allScreen.push(ecran)
+    ecransProgra.forEach((ecran,i)=>{
+        ecran.material = createEcranMat(i,timeXProgra,ecransProgra.length)
+        ecran.material.uniforms.uTexture.value = prograImg
+        allScreen.push(ecran)
     })
 
-    ecransInterview.forEach((ecran,i)=>{
-        ecran.material = createEcranMatInt(Math.random()*100,10+Math.random()*10)
-                                const id = i%4
-                                ecran.material.uniforms.uTexture.value = miniatures[id]
-                                ecran.previousImg = id
-                                ecran.material.uniforms.uPreviousTexture.value = 0
-                            allScreen.push(ecran)
-                            interwiewScreen.push(ecran)
+    interwiewScreen.forEach((ecran,i)=>{
+        ecran.material = createEcranMatInt(i,timeXinterview,interwiewScreen.length)
+            const id = i%4
+            ecran.material.uniforms.uTexture.value = miniatures[id]
+            ecran.previousImg = id
+            ecran.material.uniforms.uPreviousTexture.value = 0
+            allScreen.push(ecran)
     })
 
     texte.material = textMat
@@ -798,8 +818,8 @@ function programmeGo(e){
 }
 
 function prepareClick(e){
-    e.stopPropagation()
     accueil.removeEventListener('click',goToAcc)
+    allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
     window.removeEventListener('pointermove',onPointerMove)
     document.body.style.cursor = "default"
     suppTemplate()
@@ -852,8 +872,6 @@ function goToAcc(e){
     listenerStop = ()=>{}
     e.stopPropagation()
     allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
-
-
     if(parseInt(getComputedStyle(e.target).width)>200){  
         header.dataset.open = "false"
         close.style.display = "none"
@@ -868,7 +886,6 @@ function goToAcc(e){
     }
     suppTemplate()
     activeMenu('#accueil')
-
 
     window.addEventListener('pointermove', onPointerMove)
     objPos.x = cameraOrigin.position.x
@@ -885,6 +902,7 @@ document.querySelector('#balade').addEventListener('click',baladeOn)
 function baladeOn(e){
     e.stopPropagation()
     activeMenu('#balade')
+    anim = false
     allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
     document.querySelector('#balade').removeEventListener('click',baladeOn)
 
@@ -1032,5 +1050,4 @@ txts.forEach((txt)=>{
 
     })
 })
-
 

@@ -235,6 +235,27 @@ button:not(.active):hover{
     animation: animInterview 0.3s ease-out;
 }
 
+#programmeT{
+    height: 100vh;
+    height: 100svh;
+    width: 100vw;
+    width:100svw;
+    padding:0;
+    background-color: #e3d4ff;
+    position: relative;
+}
+
+#programmeT img{
+    height: 90%;
+    display: block;
+    position: absolute;
+    left: 50%;
+    top:0;
+    transform: translateX(-50%);
+    width: 100%;
+    object-fit: contain;
+}
+
 #interviewT{
     /**animation: animInterview 0.3s ease-out; **/
     background-color: white;
@@ -348,7 +369,7 @@ ul{
     padding-top: 10vh;
     padding-top: 10svh;
     flex-direction: column;
-    height: 90svh;
+    height: 90vh;
     height: 90svh;
     width: 100%;
     background-color: white;
