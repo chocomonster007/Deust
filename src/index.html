@@ -97,8 +97,13 @@
       </main>
 
       <main id="programmeT">
-        <img  srcset="programme.jpg 1920w, programme-m.jpg 800w"  sizes="(max-width: 1000px) 800px,
-        1920px" src="programme.jpg" alt="programme de l'évènement rencontre deust">
+        <picture>
+          <source media="(max-width: 999px)" srcset="programme-m.jpg" />
+          <source media="(min-width: 1000px)" srcset="programme.jpg" />
+          <img
+            src="programme.jpg"
+            alt="Programme de l'évènement rencontre DEUST" />
+        </picture>
       </main>
  
     <script type="module" src="./script.js"></script>
