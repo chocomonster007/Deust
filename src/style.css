@@ -283,6 +283,9 @@ button:not(.active):hover{
 
 #infosT{
     text-align: center;
+    min-height:100vh;
+    min-height:100svh;
+    background-color: white;
 }
 
 @media (max-width:850px){

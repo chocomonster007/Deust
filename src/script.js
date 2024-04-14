@@ -237,7 +237,7 @@ cone.position.set(0.05,2.5,-1.88)
 cone.rotation.x=Math.PI/2.5
 cone.geometry.computeBoundingBox()
 
-function createEcranMat(id,timeX, length){
+function createEcranMat(id,timeX, length, bgColor){
     return new THREE.ShaderMaterial({
         uniforms:{
             uTime:{
@@ -251,7 +251,8 @@ function createEcranMat(id,timeX, length){
             },
             uDecalage: {value:id},
             uTimeX: {value:timeX},
-            uLength:{value:length}
+            uLength:{value:length},
+            uBgColor:{value:bgColor}
         },
         vertexShader:`
         varying vec2 vUv;
@@ -272,6 +273,7 @@ function createEcranMat(id,timeX, length){
         uniform float uLength;
         varying vec2 vUv;
         uniform sampler2D uTexture;
+        uniform vec3 uBgColor;
 
         void main(){
             vec2 duplicateUv = vUv;
@@ -288,7 +290,7 @@ function createEcranMat(id,timeX, length){
             vec4 textureColor = texture2D(uTexture, vUv);
 
             vec4 finalTexture = mix(textureColor, vec4(0.0,0.0,0.0,1.0),color);
-            finalTexture = mix(finalTexture, vec4(1.0,1.0,1.0,1.0), colorBis);
+            finalTexture = mix(finalTexture, vec4(uBgColor,1.0), colorBis);
             
 
             gl_FragColor = finalTexture;
@@ -439,13 +441,16 @@ gltfLoader.load('deustSalle.glb',gltf=>{
     const timeXProgra = 6+Math.random()*5
     const timeXinterview = 5+Math.random()*5
 
+    const color = new THREE.Color(0xe3d4ff).convertLinearToSRGB()
+    console.log(color);
+
     ecransInfos.forEach((ecran,i)=>{
-        ecran.material = createEcranMat(i,timeXInfos,ecransInfos.length)
+        ecran.material = createEcranMat(i,timeXInfos,ecransInfos.length,new THREE.Color('white'))
         ecran.material.uniforms.uTexture.value = infosImg
         allScreen.push(ecran)})
 
     ecransProgra.forEach((ecran,i)=>{
-        ecran.material = createEcranMat(i,timeXProgra,ecransProgra.length)
+        ecran.material = createEcranMat(i,timeXProgra,ecransProgra.length,color)
         ecran.material.uniforms.uTexture.value = prograImg
         allScreen.push(ecran)
     })
@@ -522,9 +527,10 @@ const infos = {
 }
 const programme = {
     position:{
-        x:-2.4275617599487305,
-        y:0.8755115270614624,
-        z:-2.078724193572998
+        x:-2.427559258685168,
+        y:0.8755216379390405,
+        z:-0.21129048165213207
+
     }
 }
 
@@ -559,6 +565,7 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
 function displayTemplate(){
+    console.log(camera.position);
     t.classList.add('on')
     accueil.addEventListener('click',goToAcc)
     t.addEventListener('click',e=>e.stopPropagation())
@@ -567,8 +574,8 @@ function displayTemplate(){
 
 function suppTemplate(){
     if(document.querySelector('.on')){
-        if(document.querySelector('#interviewT').classList.contains('on')){
-            document.querySelector('#interviewT').animate([
+        if(document.querySelector('#interviewT').classList.contains('on') || (infosT.classList.contains('on') && camera.position.z<-4)){
+            document.querySelector('.on').animate([
                 {transform:"translateX(0px)"},
                 {transform:"translateX(100%)"},
             ],{
@@ -675,9 +682,9 @@ function letsGo(event){
         }
         else if(interObj.name === "toileRetro"){
             objPos.z += 1.5
-            activeMenu('#interviews')
-            document.querySelector('#interviewT').classList.add('animEntrance')
-            t = interviewT
+            activeMenu('#infos')
+            infosT.classList.add('animEntrance')
+            t = infosT
             anim="toile"
         }
                
@@ -764,7 +771,6 @@ function arriveEcran(e){
 
 function animEcran(){
     const elapsedTimeAnim = timeAnim.getElapsedTime()
-    console.log(elapsedTimeAnim);
     allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = elapsedTimeAnim)
     if(elapsedTimeAnim<0.3){
         requestAnimationFrame(animEcran)
@@ -871,6 +877,7 @@ function goToAcc(e){
     listenerStop()
     listenerStop = ()=>{}
     e.stopPropagation()
+    infosT.classList.remove('animEntrance')
     allScreen.forEach(ecran=>ecran.material.uniforms.uTimeBis.value = 0)
     if(parseInt(getComputedStyle(e.target).width)>200){  
         header.dataset.open = "false"
