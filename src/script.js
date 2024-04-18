@@ -283,7 +283,7 @@ function createEcranMat(id,timeX, length, bgColor){
             float timeB = step(1.0,timeExec);
             float timeF = (timeB-timeA);
             float timeTruc = min((sin(timeF*timeSpend)*uTimeX),1.01);
-            float click = 1.0-uTimeBis;
+            float click = 1.01-uTimeBis;
 
             float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
             float colorBis = step(click,1.0-abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
@@ -349,7 +349,7 @@ function createEcranMatInt(decalage,timeX,length){
             float timeB = step(1.0,timeExec);
             float timeF = (timeB-timeA);
             float timeTruc = min((sin(timeF*timeSpend)*uTimeX),1.01);
-            float click = 1.0-uTimeBis;
+            float click = 1.01-uTimeBis;
 
             float color = step(timeTruc,abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
             float colorBis = step(click,1.0-abs(duplicateUv.x-0.5)*abs(duplicateUv.y-0.5));
