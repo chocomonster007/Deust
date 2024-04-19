@@ -304,6 +304,10 @@ button:not(.active):hover{
     cursor: pointer;
 }
 
+#programmeT img{
+    height: 100%;
+}
+
 #interviewT iframe{
     height: 40vh;
     width: 100%;
